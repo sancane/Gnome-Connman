@@ -57,3 +57,20 @@ const ManagerInterface = {
 
 let ManagerProxy = DBus.makeProxyClass(ManagerInterface);
 
+
+const TECHNOLOGY_INTERFACE = 'net.connman.Technology';
+
+const TechnologyInterface = {
+    name: TECHNOLOGY_INTERFACE,
+    methods: [
+        { name: 'GetProperties', inSignature: '', outSignature: 'a{sv}' },
+        { name: 'SetProperty', inSignature: 'sv', outSignature: '' },
+        { name: 'Scan', inSignature: '', outSignature: '' },
+        ],
+    signals: [
+        { name: 'PropertyChanged', inSignature: 'sv' },
+        ]
+};
+
+let TechnologyProxy = DBus.makeProxyClass(TechnologyInterface);
+
