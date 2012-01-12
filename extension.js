@@ -21,10 +21,46 @@
  *
  */
 
+const DBus = imports.dbus;
 const St = imports.gi.St;
+
 const Main = imports.ui.main;
 
 let button;
+
+const CONNMAN_MANAGER_SERVICE = 'net.connman';
+const CONNMAN_MANAGER_INTERFACE = 'net.connman.Manager';
+const CONNMAN_MANAGER_OBJECT_PATH = '/';
+
+const ConnmanManagerInterface = {
+    name: CONNMAN_MANAGER_INTERFACE,
+    methods: [
+        { name: 'GetProperties', inSignature: '', outSignature: 'a{sv}' },
+        { name: 'SetProperty', inSignature: 'sv', outSignature: '' },
+        { name: 'GetTechnologies', inSignature: '', outSignature: 'a(oa{sv})' },
+        { name: 'RemoveProvider', inSignature: 'o', outSignature: '' },
+        { name: 'RequestScan', inSignature: 's', outSignature: '' },
+        { name: 'EnableTechnology', inSignature: 's', outSignature: '' },
+        { name: 'DisableTechnology', inSignature: 's', outSignature: '' },
+        { name: 'GetServices', inSignature: '', outSignature: 'a(oa{sv})' },
+        { name: 'ConnectProvider', inSignature: 'a{sv}', outSignature: 'o' },
+        { name: 'RegisterAgent', inSignature: 'o', outSignature: '' },
+        { name: 'UnregisterAgent', inSignature: 'o', outSignature: '' },
+        { name: 'RegisterCounter', inSignature: 'ouu', outSignature: '' },
+        { name: 'UnregisterCounter', inSignature: 'o', outSignature: '' },
+        { name: 'CreateSession', inSignature: 'a{sv}o', outSignature: 'o' },
+        { name: 'DestroySession', inSignature: 'o', outSignature: '' },
+        { name: 'RequestPrivateNetwork', inSignature: '', outSignature: 'oa{sv}h' },
+        { name: 'ReleasePrivateNetwork', inSignature: 'o', outSignature: '' },
+        ],
+    signals: [
+        { name: 'PropertyChanged', inSignature: 'sv' },
+        { name: 'TechnologyAdded', inSignature: 'a{sv}' },
+        { name: 'TechnologyRemoved', inSignature: 'o' },
+        ]
+};
+
+let ConnmanManagerProxy = DBus.makeProxyClass(ConnmanManagerInterface);
 
 function init() {
     button = new St.Bin({ style_class: 'panel-button',
@@ -38,6 +74,8 @@ function init() {
                              style_class: 'system-status-icon' });
 
     button.set_child(icon);
+    this._managerProxy = new ConnmanManagerProxy(DBus.system,
+                          CONNMAN_MANAGER_SERVICE, CONNMAN_MANAGER_OBJECT_PATH);
 }
 
 function enable() {
