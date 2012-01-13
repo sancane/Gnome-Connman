@@ -31,40 +31,58 @@ const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
 const ConnmanDbus = Extension.connmanDbus;
 const Main = imports.ui.main;
 
-let button;
+let connMan = null;
 
-function _buttonPressed() {
-    global.log('Button Pressed');
-}
+function ConnManager() {
+    this._init();
+};
 
-function _propertyChanged() {
-    global.log('Property Changed');
-}
-
-function init() {
-    button = new St.Bin({ style_class: 'panel-button',
+ConnManager.prototype = {
+    _init: function() {
+        this._button = new St.Bin({ style_class: 'panel-button',
                           reactive: true,
                           can_focus: true,
                           x_fill: true,
                           y_fill: false,
                           track_hover: true });
-    let icon = new St.Icon({ icon_name: 'network-offline',
+        this._icon = new St.Icon({ icon_name: 'network-offline',
                              icon_type: St.IconType.SYMBOLIC,
                              style_class: 'system-status-icon' });
 
-    button.set_child(icon);
-    button.connect('button-press-event', _buttonPressed);
-    this._managerProxy = new ConnmanDbus.ManagerProxy(DBus.system,
+        this._button.set_child(this._icon);
+        this._button.connect('button-press-event', this._buttonPressed);
+        this._managerProxy = new ConnmanDbus.ManagerProxy(DBus.system,
                                               ConnmanDbus.MANAGER_SERVICE,
                                               ConnmanDbus.MANAGER_OBJECT_PATH);
-    this._managerProxy.connect('PropertyChanged',
-                          Lang.bind(this, _propertyChanged));
+        this._managerProxy.connect('PropertyChanged',
+                          Lang.bind(this, this._propertyChanged));
+    },
+
+    _buttonPressed: function() {
+        global.log('Button Pressed');
+    },
+
+    _propertyChanged: function(properties) {
+        global.log('These are the properties: ' + properties);
+    },
+
+    enable: function() {
+        Main.panel._rightBox.insert_actor(this._button, 0);
+    },
+
+    disable: function() {
+        Main.panel._rightBox.remove_actor(this._button);
+    }
+};
+
+function init() {
+    connMan = new ConnManager();
 }
 
 function enable() {
-    Main.panel._rightBox.insert_actor(button, 0);
+    connMan.enable();
 }
 
 function disable() {
-    Main.panel._rightBox.remove_actor(button);
+    connMan.disable();
 }
