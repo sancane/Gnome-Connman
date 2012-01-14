@@ -33,12 +33,18 @@ const Main = imports.ui.main;
 
 let connMan = null;
 
+const ConnManState = {
+    OFFLINE: 'offline',
+    ONLINE: 'online',
+};
+
 function ConnManager() {
     this._init();
 };
 
 ConnManager.prototype = {
     _init: function() {
+        this._state = ConnManState.OFFLINE;
         this._button = new St.Bin({ style_class: 'panel-button',
                           reactive: true,
                           can_focus: true,
@@ -55,15 +61,45 @@ ConnManager.prototype = {
                                               ConnmanDbus.MANAGER_SERVICE,
                                               ConnmanDbus.MANAGER_OBJECT_PATH);
         this._managerProxy.connect('PropertyChanged',
-                          Lang.bind(this, this._propertyChanged));
+                                      Lang.bind(this, this._propertyChanged));
+
+        this._managerProxy.GetPropertiesRemote(Lang.bind(this,
+                                                    function(properties, err) {
+
+            if (err != null) {
+                global.log(err);
+                return;
+            }
+
+            for (let prop in properties) {
+                if (prop == 'Services')
+                    global.log('TODO: ' + prop);
+                else if (prop == 'State') {
+                    this._state = properties[prop];
+                    this._updateStateIconState();
+                } else if (prop == 'OfflineMode')
+                    global.log('TODO: ' + prop);
+                else if (prop == 'SessionMode')
+                    global.log('TODO: ' + prop);
+            }
+        }));
     },
 
     _buttonPressed: function() {
         global.log('Button Pressed');
     },
 
-    _propertyChanged: function(properties) {
-        global.log('These are the properties: ' + properties);
+    _updateStateIcon: function() {
+        if (this._state == ConnManState.OFFLINE)
+            this._icon.icon_name = 'network-offline';
+        else if (this._state == ConnManState.ONLINE)
+            this._icon.icon_name = 'network-transmit-receive';
+        else
+            global.log('Unexpected state: ' + this._state);
+    },
+
+    _propertyChanged: function(property, val, p) {
+        /* TODO: */
     },
 
     enable: function() {
