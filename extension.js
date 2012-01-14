@@ -63,19 +63,22 @@ ConnManager.prototype = {
                 return;
             }
 
-            for (let prop in properties) {
-                if (prop == 'Services')
-                    global.log('TODO: ' + prop);
-                else if (prop == 'State') {
-                    this._state = properties[prop];
-                    this._updateStateIcon();
-                } else if (prop == 'OfflineMode') {
-                    this._offlineMode = properties[prop];
-                    this._updateStateIcon();
-                } else if (prop == 'SessionMode')
-                    global.log('TODO: ' + prop);
-            }
+            for (let prop in properties)
+                this._processProperty(prop, properties[prop]);
         }));
+    },
+
+    _processProperty: function(property, value) {
+        if (property == 'Services')
+            global.log('TODO: ' + property);
+        else if (property == 'State') {
+            this._state = value;
+            this._updateStateIcon();
+        } else if (property == 'OfflineMode') {
+            this._offlineMode = value;
+            this._updateStateIcon();
+        } else if (property == 'SessionMode')
+            global.log('TODO: ' + property);
     },
 
     _updateStateIcon: function() {
@@ -92,8 +95,8 @@ ConnManager.prototype = {
             global.log('Unexpected state: ' + this._state);
     },
 
-    _propertyChanged: function(property, val, p) {
-        /* TODO: */
+    _propertyChanged: function(dbus, property, value) {
+        this._processProperty(property, value);
     },
 
     enable: function() {
