@@ -28,6 +28,7 @@ const Lang = imports.lang;
 const St = imports.gi.St;
 
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
+const ConnmanApplet = Extension.connmanApplet;
 const ConnmanDbus = Extension.connmanDbus;
 const Main = imports.ui.main;
 
@@ -43,20 +44,11 @@ function ConnManager() {
 };
 
 ConnManager.prototype = {
-    _init: function() {
-        this._state = ConnManState.OFFLINE;
-        this._button = new St.Bin({ style_class: 'panel-button',
-                          reactive: true,
-                          can_focus: true,
-                          x_fill: true,
-                          y_fill: false,
-                          track_hover: true });
-        this._icon = new St.Icon({ icon_name: 'network-offline',
-                             icon_type: St.IconType.SYMBOLIC,
-                             style_class: 'system-status-icon' });
+    __proto__ : ConnmanApplet.ConnmanApp.prototype,
 
-        this._button.set_child(this._icon);
-        this._button.connect('button-press-event', Lang.bind(this, this._buttonPressed));
+    _init: function() {
+        ConnmanApplet.ConnmanApp.prototype._init.call(this);
+        this._state = ConnManState.OFFLINE;
         this._managerProxy = new ConnmanDbus.ManagerProxy(DBus.system,
                                               ConnmanDbus.MANAGER_SERVICE,
                                               ConnmanDbus.MANAGER_OBJECT_PATH);
@@ -85,20 +77,11 @@ ConnManager.prototype = {
         }));
     },
 
-    _buttonPressed: function() {
-        global.log("Test ICOOOON " + this._icon + ", state: " + this._state);
-        if (this._state == ConnManState.OFFLINE)
-            this._state = ConnManState.ONLINE;
-        else if (this._state == ConnManState.ONLINE)
-            this._state = ConnManState.OFFLINE;
-        this._updateStateIcon();
-    },
-
     _updateStateIcon: function() {
         if (this._state == ConnManState.OFFLINE)
-            this._icon.icon_name = 'network-offline';
+            this._icon.icon_name = ConnmanApplet.NetStatIcon.NETOFFLINE;
         else if (this._state == ConnManState.ONLINE)
-            this._icon.icon_name = 'network-transmit-receive';
+            this._icon.icon_name = ConnmanApplet.NetStatIcon.NETTRANSRECV;
         else
             global.log('Unexpected state: ' + this._state);
     },
