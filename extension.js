@@ -49,6 +49,7 @@ ConnManager.prototype = {
     _init: function() {
         ConnmanApplet.ConnmanApp.prototype._init.call(this);
         this._state = ConnManState.OFFLINE;
+        this._offlineMode = false;
         this._managerProxy = new ConnmanDbus.ManagerProxy(DBus.system,
                                               ConnmanDbus.MANAGER_SERVICE,
                                               ConnmanDbus.MANAGER_OBJECT_PATH);
@@ -57,7 +58,6 @@ ConnManager.prototype = {
 
         this._managerProxy.GetPropertiesRemote(Lang.bind(this,
                                                     function(properties, err) {
-
             if (err != null) {
                 global.log(err);
                 return;
@@ -69,17 +69,23 @@ ConnManager.prototype = {
                 else if (prop == 'State') {
                     this._state = properties[prop];
                     this._updateStateIconState();
-                } else if (prop == 'OfflineMode')
-                    global.log('TODO: ' + prop);
-                else if (prop == 'SessionMode')
+                } else if (prop == 'OfflineMode') {
+                    this._offlineMode = = properties[prop];
+                    this._updateStateIconState();
+                } else if (prop == 'SessionMode')
                     global.log('TODO: ' + prop);
             }
         }));
     },
 
     _updateStateIcon: function() {
-        if (this._state == ConnManState.OFFLINE)
+        if (this._offlineMode) {
             this._icon.icon_name = ConnmanApplet.NetStatIcon.NETOFFLINE;
+            return;
+        }
+
+        if (this._state == ConnManState.OFFLINE)
+            this._icon.icon_name = ConnmanApplet.NetStatIcon.NETIDLE;
         else if (this._state == ConnManState.ONLINE)
             this._icon.icon_name = ConnmanApplet.NetStatIcon.NETTRANSRECV;
         else
