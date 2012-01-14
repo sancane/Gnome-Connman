@@ -56,7 +56,7 @@ ConnManager.prototype = {
                              style_class: 'system-status-icon' });
 
         this._button.set_child(this._icon);
-        this._button.connect('button-press-event', this._buttonPressed);
+        this._button.connect('button-press-event', Lang.bind(this, this._buttonPressed));
         this._managerProxy = new ConnmanDbus.ManagerProxy(DBus.system,
                                               ConnmanDbus.MANAGER_SERVICE,
                                               ConnmanDbus.MANAGER_OBJECT_PATH);
@@ -86,7 +86,12 @@ ConnManager.prototype = {
     },
 
     _buttonPressed: function() {
-        global.log('Button Pressed');
+        global.log("Test ICOOOON " + this._icon + ", state: " + this._state);
+        if (this._state == ConnManState.OFFLINE)
+            this._state = ConnManState.ONLINE;
+        else if (this._state == ConnManState.ONLINE)
+            this._state = ConnManState.OFFLINE;
+        this._updateStateIcon();
     },
 
     _updateStateIcon: function() {
