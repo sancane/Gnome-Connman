@@ -68,10 +68,10 @@ ConnManager.prototype = {
                     global.log('TODO: ' + prop);
                 else if (prop == 'State') {
                     this._state = properties[prop];
-                    this._updateStateIconState();
+                    this._updateStateIcon();
                 } else if (prop == 'OfflineMode') {
-                    this._offlineMode = = properties[prop];
-                    this._updateStateIconState();
+                    this._offlineMode = properties[prop];
+                    this._updateStateIcon();
                 } else if (prop == 'SessionMode')
                     global.log('TODO: ' + prop);
             }
