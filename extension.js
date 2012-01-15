@@ -49,6 +49,7 @@ ConnManager.prototype = {
         ConnmanApplet.ConnmanApp.prototype._init.call(this);
         this._state = ConnManState.OFFLINE;
         this._offlineMode = false;
+        this._operating = false;
         this._managerProxy = new ConnmanDbus.ManagerProxy(DBus.system,
                                               ConnmanDbus.MANAGER_SERVICE,
                                               ConnmanDbus.MANAGER_OBJECT_PATH);
@@ -61,8 +62,7 @@ ConnManager.prototype = {
     },
 
     _onManagerAppeared: function(owner) {
-        this.enable();
-
+        this._operating = true;
         this._managerProxy.GetPropertiesRemote(Lang.bind(this,
                                                     function(properties, err) {
             if (err != null) {
@@ -72,11 +72,14 @@ ConnManager.prototype = {
 
             for (let prop in properties)
                 this._processProperty(prop, properties[prop]);
+
+            this._showApp();
         }));
     },
 
     _onManagerVanished: function(oldOwner) {
-        this.disable();
+        this._operating = false;
+        this._hideApp();
     },
 
     _processProperty: function(property, value) {
@@ -109,6 +112,15 @@ ConnManager.prototype = {
     _propertyChanged: function(dbus, property, value) {
         this._processProperty(property, value);
     },
+
+    _resume: function() {
+        if (this._operating)
+            this._showApp();
+    },
+
+    _shutdown: function() {
+        this._hideApp();
+    }
 };
 
 function init() {
@@ -116,9 +128,9 @@ function init() {
 }
 
 function enable() {
-    /*TODO: */
+    connMan.enable();
 }
 
 function disable() {
-    /*TODO: */
+    connMan.disable();
 }

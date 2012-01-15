@@ -41,6 +41,7 @@ function ConnmanApp() {
 
 ConnmanApp.prototype = {
     _init: function() {
+        this._enabled = false;
         this._button = new St.Bin({ style_class: 'panel-button',
                           reactive: true,
                           can_focus: true,
@@ -70,11 +71,28 @@ ConnmanApp.prototype = {
             this._icon.icon_name = NetStatIcon.NETERROR;
     },
 
+    _showApp: function () {
+        if (this._enabled)
+            Main.panel._rightBox.insert_actor(this._button, 0);
+    },
+
+    _hideApp: function () {
+        Main.panel._rightBox.remove_actor(this._button);
+    },
+
+    /* Overwrite this method */
+    _shutdown: function() {},
+
+    /* Overwrite this method */
+    _resume: function() {},
+
     enable: function() {
-        Main.panel._rightBox.insert_actor(this._button, 0);
+        this._enabled = true;
+        this._resume();
     },
 
     disable: function() {
-        Main.panel._rightBox.remove_actor(this._button);
+        this._enabled = false;
+        this._shutdown();
     }
 };
