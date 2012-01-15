@@ -54,6 +54,14 @@ ConnManager.prototype = {
                                               ConnmanDbus.MANAGER_OBJECT_PATH);
         this._managerProxy.connect('PropertyChanged',
                                       Lang.bind(this, this._propertyChanged));
+        DBus.system.watch_name(ConnmanDbus.MANAGER_SERVICE,
+                           false, // do not launch a name-owner if none exists
+                           Lang.bind(this, this._onManagerAppeared),
+                           Lang.bind(this, this._onManagerVanished));
+    },
+
+    _onManagerAppeared: function(owner) {
+        this.enable();
 
         this._managerProxy.GetPropertiesRemote(Lang.bind(this,
                                                     function(properties, err) {
@@ -65,6 +73,10 @@ ConnManager.prototype = {
             for (let prop in properties)
                 this._processProperty(prop, properties[prop]);
         }));
+    },
+
+    _onManagerVanished: function(oldOwner) {
+        this.disable();
     },
 
     _processProperty: function(property, value) {
@@ -104,9 +116,9 @@ function init() {
 }
 
 function enable() {
-    connMan.enable();
+    /*TODO: */
 }
 
 function disable() {
-    connMan.disable();
+    /*TODO: */
 }
