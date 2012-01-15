@@ -74,3 +74,16 @@ const TechnologyInterface = {
 
 let TechnologyProxy = DBus.makeProxyClass(TechnologyInterface);
 
+const AGENT_INTERFACE = 'net.connman.Agent';
+
+const ConnmanAgent = {
+    name: AGENT_INTERFACE,
+    methods: [
+        { name: 'Release', inSignature: '', outSignature: '' },
+        { name: 'ReportError', inSignature: 'os', outSignature: '' },
+        { name: 'RequestBrowser', inSignature: 'os', outSignature: '' },
+        { name: 'RequestInput', inSignature: 'oa{sv}', outSignature: 'a{sv}' },
+        { name: 'Cancel', inSignature: '', outSignature: '' },
+        ]
+};
+
