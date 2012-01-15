@@ -24,6 +24,8 @@
 const Lang = imports.lang;
 const St = imports.gi.St;
 
+const Main = imports.ui.main;
+
 const NetStatIcon = {
     NETERROR: 'network-error',
     NETIDLE: 'network-idle',
@@ -66,5 +68,13 @@ ConnmanApp.prototype = {
             this._icon.icon_name = NetStatIcon.NETTRANSRECV;
         else if (this._icon.icon_name == NetStatIcon.NETTRANSRECV)
             this._icon.icon_name = NetStatIcon.NETERROR;
+    },
+
+    enable: function() {
+        Main.panel._rightBox.insert_actor(this._button, 0);
+    },
+
+    disable: function() {
+        Main.panel._rightBox.remove_actor(this._button);
     }
 };

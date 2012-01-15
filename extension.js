@@ -30,7 +30,6 @@ const St = imports.gi.St;
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
 const ConnmanApplet = Extension.connmanApplet;
 const ConnmanDbus = Extension.connmanDbus;
-const Main = imports.ui.main;
 
 let connMan = null;
 
@@ -98,14 +97,6 @@ ConnManager.prototype = {
     _propertyChanged: function(dbus, property, value) {
         this._processProperty(property, value);
     },
-
-    enable: function() {
-        Main.panel._rightBox.insert_actor(this._button, 0);
-    },
-
-    disable: function() {
-        Main.panel._rightBox.remove_actor(this._button);
-    }
 };
 
 function init() {
