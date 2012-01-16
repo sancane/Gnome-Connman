@@ -38,6 +38,38 @@ const ConnManState = {
     ONLINE: 'online',
 };
 
+function Agent() {
+    this._init();
+};
+
+Agent.prototype = {
+    _init: function() {
+        DBus.session.exportObject(ConnmanDbus.AGENT_PATH, this);
+    },
+
+    Release: function() {
+        global.log('TODO: Release');
+    },
+
+    ReportError: function() {
+        global.log('TODO: ReportError');
+    },
+
+    RequestBrowser: function() {
+        global.log('TODO: RequestBrowser');
+    },
+
+    RequestInput: function() {
+        global.log('TODO: RequestInput');
+    },
+
+    Cancel: function() {
+        global.log('TODO: Cancel');
+    }
+};
+
+DBus.conformExport(Agent.prototype, ConnmanDbus.ConnmanAgent);
+
 function ConnManager() {
     this._init();
 };
@@ -50,6 +82,7 @@ ConnManager.prototype = {
         this._state = ConnManState.OFFLINE;
         this._offlineMode = false;
         this._operating = false;
+        this._agent = new Agent();
         this._managerProxy = new ConnmanDbus.ManagerProxy(DBus.system,
                                               ConnmanDbus.MANAGER_SERVICE,
                                               ConnmanDbus.MANAGER_OBJECT_PATH);
@@ -63,6 +96,14 @@ ConnManager.prototype = {
 
     _onManagerAppeared: function(owner) {
         this._operating = true;
+        this._managerProxy.RegisterAgentRemote(ConnmanDbus.AGENT_PATH,
+                                                Lang.bind(this, function(err) {
+            if (err != null) {
+                global.log("Error Registering the Agent");
+                this._icon.icon_name = ConnmanApplet.NetStatIcon.NETERROR;
+            }
+        }));
+
         this._managerProxy.GetPropertiesRemote(Lang.bind(this,
                                                     function(properties, err) {
             if (err != null) {

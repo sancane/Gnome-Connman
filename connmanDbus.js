@@ -74,6 +74,7 @@ const TechnologyInterface = {
 
 let TechnologyProxy = DBus.makeProxyClass(TechnologyInterface);
 
+const AGENT_PATH = '/org/gnome/ConnmanAgent';
 const AGENT_INTERFACE = 'net.connman.Agent';
 
 const ConnmanAgent = {
