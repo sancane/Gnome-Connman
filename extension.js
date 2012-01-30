@@ -82,6 +82,7 @@ ConnManager.prototype = {
         this._state = ConnManState.OFFLINE;
         this._offlineMode = false;
         this._operating = false;
+        this._error = false;
         this._agent = new Agent();
         this._managerProxy = new ConnmanDbus.ManagerProxy(DBus.system,
                                               ConnmanDbus.MANAGER_SERVICE,
@@ -96,11 +97,13 @@ ConnManager.prototype = {
 
     _onManagerAppeared: function(owner) {
         this._operating = true;
+        this._showApp();
         this._managerProxy.RegisterAgentRemote(ConnmanDbus.AGENT_PATH,
                                                 Lang.bind(this, function(err) {
             if (err != null) {
                 global.log("Error Registering the Agent");
-                this._icon.icon_name = ConnmanApplet.NetStatIcon.NETERROR;
+                this._error = true;
+                _updateStateIcon();
             }
         }));
 
@@ -113,8 +116,6 @@ ConnManager.prototype = {
 
             for (let prop in properties)
                 this._processProperty(prop, properties[prop]);
-
-            this._showApp();
         }));
     },
 
@@ -137,6 +138,11 @@ ConnManager.prototype = {
     },
 
     _updateStateIcon: function() {
+        if (this._error)  {
+            this.setIconName(ConnmanApplet.NetStatIcon.NETERROR);
+            return;
+        }
+
         if (this._offlineMode) {
             this.setIconName(ConnmanApplet.NetStatIcon.NETOFFLINE);
             return;
