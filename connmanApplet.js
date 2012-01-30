@@ -96,7 +96,7 @@ ConnmanApp.prototype = {
         this._shutdown();
     },
 
-    setIcon: function(name) {
+    setIconName: function(name) {
         this._icon.icon_name = name;
     }
 };
