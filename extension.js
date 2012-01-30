@@ -138,14 +138,14 @@ ConnManager.prototype = {
 
     _updateStateIcon: function() {
         if (this._offlineMode) {
-            this._icon.icon_name = ConnmanApplet.NetStatIcon.NETOFFLINE;
+            this.setIconName(ConnmanApplet.NetStatIcon.NETOFFLINE);
             return;
         }
 
         if (this._state == ConnManState.OFFLINE)
-            this._icon.icon_name = ConnmanApplet.NetStatIcon.NETIDLE;
+            this.setIconName(ConnmanApplet.NetStatIcon.NETIDLE);
         else if (this._state == ConnManState.ONLINE)
-            this._icon.icon_name = ConnmanApplet.NetStatIcon.NETTRANSRECV;
+            this.setIconName(ConnmanApplet.NetStatIcon.NETTRANSRECV);
         else
             global.log('Unexpected state: ' + this._state);
     },

@@ -94,5 +94,9 @@ ConnmanApp.prototype = {
     disable: function() {
         this._enabled = false;
         this._shutdown();
+    },
+
+    setIcon: function(name) {
+        this._icon.icon_name = name;
     }
 };
