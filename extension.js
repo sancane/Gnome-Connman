@@ -172,7 +172,8 @@ ConnManager.prototype = {
     }
 };
 
-function init() {
+function init(metadata) {
+    global.log('Starting ConnMan extension - version: ' + metadata.version);
     connMan = new ConnManager();
     Main.panel.addToStatusArea('networkp', connMan);
 }

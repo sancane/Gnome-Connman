@@ -1,1 +1,1 @@
-{"shell-version": ["3.2.2.1"], "uuid": "gnome_connman@extensions.com", "name": "gnome-connman", "description": "Gnome extension to manage internet connections through connman"}
+{"shell-version": ["3.2.2.1"], "uuid": "gnome_connman@extensions.com", "name": "gnome-connman", "version": "0.0.1", "description": "Gnome extension to manage internet connections through connman"}
