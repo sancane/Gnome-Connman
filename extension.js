@@ -31,6 +31,8 @@ const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
 const ConnmanApplet = Extension.connmanApplet;
 const ConnmanDbus = Extension.connmanDbus;
 
+const Main = imports.ui.main;
+
 let connMan = null;
 
 const ConnManState = {
@@ -139,19 +141,19 @@ ConnManager.prototype = {
 
     _updateStateIcon: function() {
         if (this._error)  {
-            this.setIconName(ConnmanApplet.NetStatIcon.NETERROR);
+            this.setIcon(ConnmanApplet.NetStatIcon.NETERROR);
             return;
         }
 
         if (this._offlineMode) {
-            this.setIconName(ConnmanApplet.NetStatIcon.NETOFFLINE);
+            this.setIcon(ConnmanApplet.NetStatIcon.NETOFFLINE);
             return;
         }
 
         if (this._state == ConnManState.OFFLINE)
-            this.setIconName(ConnmanApplet.NetStatIcon.NETIDLE);
+            this.setIcon(ConnmanApplet.NetStatIcon.NETIDLE);
         else if (this._state == ConnManState.ONLINE)
-            this.setIconName(ConnmanApplet.NetStatIcon.NETTRANSRECV);
+            this.setIcon(ConnmanApplet.NetStatIcon.NETTRANSRECV);
         else
             global.log('Unexpected state: ' + this._state);
     },
@@ -172,6 +174,7 @@ ConnManager.prototype = {
 
 function init() {
     connMan = new ConnManager();
+    Main.panel.addToStatusArea('networkp', connMan);
 }
 
 function enable() {

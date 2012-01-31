@@ -25,6 +25,8 @@ const Lang = imports.lang;
 const St = imports.gi.St;
 
 const Main = imports.ui.main;
+const Panel = imports.ui.panel;
+const PanelMenu = imports.ui.panelMenu;
 
 const NetStatIcon = {
     NETERROR: 'network-error',
@@ -40,44 +42,21 @@ function ConnmanApp() {
 }
 
 ConnmanApp.prototype = {
-    _init: function() {
-        this._enabled = false;
-        this._button = new St.Bin({ style_class: 'panel-button',
-                          reactive: true,
-                          can_focus: true,
-                          x_fill: true,
-                          y_fill: false,
-                          track_hover: true });
-        this._icon = new St.Icon({ icon_name: NetStatIcon.NETOFFLINE,
-                             icon_type: St.IconType.SYMBOLIC,
-                             style_class: 'system-status-icon' });
-        this._button.set_child(this._icon);
-        this._button.connect('button-press-event',
-                                        Lang.bind(this, this._buttonPressed));
-    },
+    __proto__: PanelMenu.SystemStatusButton.prototype,
 
-    _buttonPressed: function() {
-        if (this._icon.icon_name == NetStatIcon.NETERROR)
-            this._icon.icon_name = NetStatIcon.NETIDLE;
-        else if (this._icon.icon_name == NetStatIcon.NETIDLE)
-            this._icon.icon_name = NetStatIcon.NETOFFLINE;
-        else if (this._icon.icon_name == NetStatIcon.NETOFFLINE)
-            this._icon.icon_name = NetStatIcon.NETRECV;
-        else if (this._icon.icon_name == NetStatIcon.NETRECV)
-            this._icon.icon_name = NetStatIcon.NETTRANS;
-        else if (this._icon.icon_name == NetStatIcon.NETTRANS)
-            this._icon.icon_name = NetStatIcon.NETTRANSRECV;
-        else if (this._icon.icon_name == NetStatIcon.NETTRANSRECV)
-            this._icon.icon_name = NetStatIcon.NETERROR;
+    _init: function() {
+        PanelMenu.SystemStatusButton.prototype._init.call(this,
+                                                    NetStatIcon.NETOFFLINE);
+        this._enabled = false;
     },
 
     _showApp: function () {
         if (this._enabled)
-            Main.panel._rightBox.insert_actor(this._button, 0);
+            this._iconActor.visible = true;
     },
 
     _hideApp: function () {
-        Main.panel._rightBox.remove_actor(this._button);
+        this._iconActor.visible = false;
     },
 
     /* Overwrite this method */
@@ -94,9 +73,5 @@ ConnmanApp.prototype = {
     disable: function() {
         this._enabled = false;
         this._shutdown();
-    },
-
-    setIconName: function(name) {
-        this._icon.icon_name = name;
     }
 };
