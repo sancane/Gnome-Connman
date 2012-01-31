@@ -52,11 +52,11 @@ ConnmanApp.prototype = {
 
     _showApp: function () {
         if (this._enabled)
-            this._iconActor.visible = true;
+            this.actor.visible = true;
     },
 
     _hideApp: function () {
-        this._iconActor.visible = false;
+        this.actor.visible = false;
     },
 
     /* Overwrite this method */
