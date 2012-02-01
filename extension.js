@@ -82,6 +82,7 @@ ConnManager.prototype = {
     _init: function() {
         ConnmanApplet.ConnmanApp.prototype._init.call(this);
         this._state = ConnManState.OFFLINE;
+        this._services = [];
         this._offlineMode = false;
         this._sesionMode = false;
         this._operating = false;
@@ -127,9 +128,14 @@ ConnManager.prototype = {
         this._hideApp();
     },
 
+    _getServices: function(services) {
+        for (let i = 0; i < services.length; i++)
+                global.log('TODO: Create service' + services[i]);
+    },
+
     _processProperty: function(property, value) {
         if (property == 'Services')
-            global.log('TODO: ' + property);
+            this._getServices(value);
         else if (property == 'State') {
             this._state = value;
             this._updateStateIcon();

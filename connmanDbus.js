@@ -74,6 +74,30 @@ const TechnologyInterface = {
 
 let TechnologyProxy = DBus.makeProxyClass(TechnologyInterface);
 
+
+const SERVICE_INTERFACE = 'net.connman.Service';
+
+const ServiceInterface = {
+    name: SERVICE_INTERFACE,
+    methods: [
+        { name: 'GetProperties', inSignature: '', outSignature: 'a{sv}' },
+        { name: 'SetProperty', inSignature: 'sv', outSignature: '' },
+        { name: 'ClearProperty', inSignature: 's',  outSignature: '' },
+        { name: 'Connect', inSignature: '', outSignature: '' },
+        { name: 'Disconnect', inSignature: '', outSignature: '' },
+        { name: 'Remove', inSignature: '', outSignature: '' },
+        { name: 'MoveBefore', inSignature: 'o', outSignature: '' },
+        { name: 'MoveAfter', inSignature: 'o', outSignature: '' },
+        { name: 'ResetCounters', inSignature: '', outSignature: '' },
+        ],
+    signals: [
+        { name: 'PropertyChanged', inSignature: 'sv' },
+        ]
+};
+
+let ServiceProxy = DBus.makeProxyClass(ServiceInterface);
+
+
 const AGENT_PATH = '/org/gnome/ConnmanAgent';
 const AGENT_INTERFACE = 'net.connman.Agent';
 
