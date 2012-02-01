@@ -83,6 +83,7 @@ ConnManager.prototype = {
         ConnmanApplet.ConnmanApp.prototype._init.call(this);
         this._state = ConnManState.OFFLINE;
         this._offlineMode = false;
+        this._sesionMode = false;
         this._operating = false;
         this._error = false;
         this._agent = new Agent();
@@ -136,7 +137,9 @@ ConnManager.prototype = {
             this._offlineMode = value;
             this._updateStateIcon();
         } else if (property == 'SessionMode')
-            global.log('TODO: ' + property);
+            this._sesionMode = value;
+        else
+            global.log('Unmanaged property: ' + property);
     },
 
     _updateStateIcon: function() {
