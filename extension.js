@@ -140,37 +140,12 @@ ConnManager.prototype = {
 
     _onManagerAppeared: function(owner) {
         this._operating = true;
-        this._showApp();
-        this._managerProxy.RegisterAgentRemote(ConnmanDbus.AGENT_PATH,
-                                                Lang.bind(this, function(err) {
-            if (err != null) {
-                global.log("Error Registering the Agent");
-                this._error = true;
-                _updateStateIcon();
-            }
-        }));
-
-        this._managerProxy.GetPropertiesRemote(Lang.bind(this,
-                                                    function(properties, err) {
-            if (err != null) {
-                global.log(err);
-                return;
-            }
-
-            for (let prop in properties) {
-                if (prop == 'Services')
-                    this._processServices(properties[prop]);
-                else
-                    this[prop] = properties[prop];
-            }
-
-            this._updateStateIcon();
-        }));
+        this._resume();
     },
 
     _onManagerVanished: function(oldOwner) {
         this._operating = false;
-        this._hideApp();
+        this._shutdown();
     },
 
     _addService_cb: function(service, err) {
@@ -232,12 +207,48 @@ ConnManager.prototype = {
     },
 
     _resume: function() {
-        if (this._operating)
-            this._showApp();
+        if (!this._operating)
+            return;
+
+        this._showApp();
+
+        this._managerProxy.RegisterAgentRemote(ConnmanDbus.AGENT_PATH,
+                                                Lang.bind(this, function(err) {
+            if (err != null) {
+                global.log("Error Registering the Agent");
+                this._error = true;
+                _updateStateIcon();
+            }
+        }));
+
+        this._managerProxy.GetPropertiesRemote(Lang.bind(this,
+                                                    function(properties, err) {
+            if (err != null) {
+                global.log(err);
+                return;
+            }
+
+            for (let prop in properties) {
+                if (prop == 'Services')
+                    this._processServices(properties[prop]);
+                else
+                    this[prop] = properties[prop];
+            }
+
+            this._updateStateIcon();
+        }));
     },
 
     _shutdown: function() {
         this._hideApp();
+
+        if (this._operating) {
+            this._managerProxy.UnregisterAgentRemote(ConnmanDbus.AGENT_PATH,
+		                                Lang.bind(this, function(err) {
+                if (err != null)
+                    global.log("Error unregistering the Agent");
+            }));
+        }
     }
 };
 
