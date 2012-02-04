@@ -48,6 +48,7 @@ ConnmanApp.prototype = {
     _init: function() {
         PanelMenu.SystemStatusButton.prototype._init.call(this,
                                                     NetStatIcon.NETOFFLINE);
+        this.actor.visible = false;
         this._enabled = false;
         this._index = 0;
         this._items = [];
