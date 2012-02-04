@@ -72,6 +72,45 @@ Agent.prototype = {
 
 DBus.conformExport(Agent.prototype, ConnmanDbus.ConnmanAgent);
 
+const ServiceState = {
+    IDLE: 'idle',
+    FAILURE: 'failure',
+    ASSOCIATION: 'association',
+    CONFIGURATION: 'configuration',
+    READY: 'ready',
+    ONLINE: 'online',
+};
+
+function Service() {
+    this._init.apply(this, arguments);
+};
+
+Service.prototype = {
+    _init: function(path, cb) {
+        this._path = path;
+        this._cb = cb;
+        this._proxy = new ConnmanDbus.ServiceProxy(DBus.system,
+                                        ConnmanDbus.MANAGER_SERVICE, path);
+
+        this._proxy.GetPropertiesRemote(Lang.bind(this,
+                                                    function(properties, err) {
+            if (err != null) {
+                this._cb(this, err);
+                return;
+            }
+
+            for (let prop in properties)
+                this[prop] = properties[prop];
+
+            this._cb(this, null);
+        }));
+    },
+
+    getPath: function() {
+        return this._path;
+    }
+};
+
 function ConnManager() {
     this._init();
 };
@@ -82,7 +121,7 @@ ConnManager.prototype = {
     _init: function() {
         ConnmanApplet.ConnmanApp.prototype._init.call(this);
         this._state = ConnManState.OFFLINE;
-        this._services = [];
+        this._services = {};
         this._offlineMode = false;
         this._sesionMode = false;
         this._operating = false;
@@ -128,14 +167,34 @@ ConnManager.prototype = {
         this._hideApp();
     },
 
-    _getServices: function(services) {
+    _addService_cb: function(service, err) {
+        let path;
+
+        if (err != null) {
+            /* TODO: Destroy the service obj */
+            global.log(err);
+            return;
+        }
+
+        path = service.getPath();
+
+        if (this._services[path] != null) {
+            /* Service is already added */
+            return;
+        }
+
+        global.log('Added service ' + path);
+        this._services[path] = service;
+    },
+
+    _processServices: function(services) {
         for (let i = 0; i < services.length; i++)
-                global.log('TODO: Create service' + services[i]);
+                new Service(services[i], Lang.bind(this, this._addService_cb));
     },
 
     _processProperty: function(property, value) {
         if (property == 'Services')
-            this._getServices(value);
+            this._processServices(value);
         else if (property == 'State') {
             this._state = value;
             this._updateStateIcon();
