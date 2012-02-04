@@ -130,8 +130,6 @@ ConnManager.prototype = {
         this._managerProxy = new ConnmanDbus.ManagerProxy(DBus.system,
                                               ConnmanDbus.MANAGER_SERVICE,
                                               ConnmanDbus.MANAGER_OBJECT_PATH);
-        this._managerProxy.connect('PropertyChanged',
-                                      Lang.bind(this, this._propertyChanged));
         DBus.system.watch_name(ConnmanDbus.MANAGER_SERVICE,
                            false, // do not launch a name-owner if none exists
                            Lang.bind(this, this._onManagerAppeared),
@@ -140,12 +138,14 @@ ConnManager.prototype = {
 
     _onManagerAppeared: function(owner) {
         this._operating = true;
-        this._resume();
+        if (this.isEnabled())
+            this._resume();
     },
 
     _onManagerVanished: function(oldOwner) {
         this._operating = false;
-        this._shutdown();
+        if (this.isEnabled())
+            this._shutdown();
     },
 
     _addService_cb: function(service, err) {
@@ -164,7 +164,6 @@ ConnManager.prototype = {
             return;
         }
 
-        global.log('Added service ' + path);
         this._services[path] = service;
         this._addService(service.Name);
     },
@@ -237,18 +236,22 @@ ConnManager.prototype = {
 
             this._updateStateIcon();
         }));
+
+        this._propChangeId = this._managerProxy.connect('PropertyChanged',
+                                      Lang.bind(this, this._propertyChanged));
     },
 
     _shutdown: function() {
         this._hideApp();
 
-        if (this._operating) {
+        this._managerProxy.disconnect(this._propChangeId);
+
+        if (this._operating)
             this._managerProxy.UnregisterAgentRemote(ConnmanDbus.AGENT_PATH,
 		                                Lang.bind(this, function(err) {
                 if (err != null)
                     global.log("Error unregistering the Agent");
             }));
-        }
     }
 };
 

@@ -83,5 +83,9 @@ ConnmanApp.prototype = {
     disable: function() {
         this._enabled = false;
         this._shutdown();
+    },
+
+    isEnabled: function() {
+        return this._enabled;
     }
 };
