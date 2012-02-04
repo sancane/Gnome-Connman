@@ -185,6 +185,7 @@ ConnManager.prototype = {
 
         global.log('Added service ' + path);
         this._services[path] = service;
+        this._addService(service.Name);
     },
 
     _processServices: function(services) {

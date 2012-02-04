@@ -27,6 +27,7 @@ const St = imports.gi.St;
 const Main = imports.ui.main;
 const Panel = imports.ui.panel;
 const PanelMenu = imports.ui.panelMenu;
+const PopupMenu = imports.ui.popupMenu;
 
 const NetStatIcon = {
     NETERROR: 'network-error',
@@ -48,6 +49,14 @@ ConnmanApp.prototype = {
         PanelMenu.SystemStatusButton.prototype._init.call(this,
                                                     NetStatIcon.NETOFFLINE);
         this._enabled = false;
+        this._index = 0;
+        this._items = [];
+    },
+
+    _addService: function(name) {
+        this._items[this._index] = new PopupMenu.PopupMenuItem(name);
+        this.menu.addMenuItem(this._items[this._index]);
+        this._index++;
     },
 
     _showApp: function () {
