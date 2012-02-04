@@ -21,8 +21,13 @@
  *
  */
 
+const EXTENSION_DIR = "gnome_connman@extensions.com";
+
 const Lang = imports.lang;
 const St = imports.gi.St;
+
+const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
+const Service = Extension.service;
 
 const Main = imports.ui.main;
 const Panel = imports.ui.panel;
@@ -54,8 +59,8 @@ ConnmanApp.prototype = {
         this._items = [];
     },
 
-    _addService: function(name) {
-        this._items[this._index] = new PopupMenu.PopupMenuItem(name);
+    _addService: function(service) {
+        this._items[this._index] = new PopupMenu.PopupMenuItem(service.Name);
         this.menu.addMenuItem(this._items[this._index]);
         this._index++;
     },

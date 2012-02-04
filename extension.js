@@ -30,6 +30,7 @@ const St = imports.gi.St;
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
 const ConnmanApplet = Extension.connmanApplet;
 const ConnmanDbus = Extension.connmanDbus;
+const Service = Extension.service;
 
 const Main = imports.ui.main;
 
@@ -72,45 +73,6 @@ Agent.prototype = {
 
 DBus.conformExport(Agent.prototype, ConnmanDbus.ConnmanAgent);
 
-const ServiceState = {
-    IDLE: 'idle',
-    FAILURE: 'failure',
-    ASSOCIATION: 'association',
-    CONFIGURATION: 'configuration',
-    READY: 'ready',
-    ONLINE: 'online',
-};
-
-function Service() {
-    this._init.apply(this, arguments);
-};
-
-Service.prototype = {
-    _init: function(path, cb) {
-        this._path = path;
-        this._cb = cb;
-        this._proxy = new ConnmanDbus.ServiceProxy(DBus.system,
-                                        ConnmanDbus.MANAGER_SERVICE, path);
-
-        this._proxy.GetPropertiesRemote(Lang.bind(this,
-                                                    function(properties, err) {
-            if (err != null) {
-                this._cb(this, err);
-                return;
-            }
-
-            for (let prop in properties)
-                this[prop] = properties[prop];
-
-            this._cb(this, null);
-        }));
-    },
-
-    getPath: function() {
-        return this._path;
-    }
-};
-
 function ConnManager() {
     this._init();
 };
@@ -127,7 +89,7 @@ ConnManager.prototype = {
         this._operating = false;
         this._error = false;
         this._agent = new Agent();
-        this._managerProxy = new ConnmanDbus.ManagerProxy(DBus.system,
+        this._proxy = new ConnmanDbus.ManagerProxy(DBus.system,
                                               ConnmanDbus.MANAGER_SERVICE,
                                               ConnmanDbus.MANAGER_OBJECT_PATH);
         DBus.system.watch_name(ConnmanDbus.MANAGER_SERVICE,
@@ -158,20 +120,20 @@ ConnManager.prototype = {
         }
 
         path = service.getPath();
-
         if (path in this._services) {
             //* TODO: Destroy the service obj */
             return;
         }
 
         this._services[path] = service;
-        this._addService(service.Name);
+        this._addService(service);
     },
 
     _processServices: function(services) {
         for (let i = 0; i < services.length; i++) {
             if (!(services[i] in this._services))
-                new Service(services[i], Lang.bind(this, this._addService_cb));
+                new Service.Service(services[i], Lang.bind(this,
+                                                        this._addService_cb));
         }
     },
 
@@ -211,7 +173,7 @@ ConnManager.prototype = {
 
         this._showApp();
 
-        this._managerProxy.RegisterAgentRemote(ConnmanDbus.AGENT_PATH,
+        this._proxy.RegisterAgentRemote(ConnmanDbus.AGENT_PATH,
                                                 Lang.bind(this, function(err) {
             if (err != null) {
                 global.log("Error Registering the Agent");
@@ -220,7 +182,7 @@ ConnManager.prototype = {
             }
         }));
 
-        this._managerProxy.GetPropertiesRemote(Lang.bind(this,
+        this._proxy.GetPropertiesRemote(Lang.bind(this,
                                                     function(properties, err) {
             if (err != null) {
                 global.log(err);
@@ -237,17 +199,17 @@ ConnManager.prototype = {
             this._updateStateIcon();
         }));
 
-        this._propChangeId = this._managerProxy.connect('PropertyChanged',
+        this._propChangeId = this._proxy.connect('PropertyChanged',
                                       Lang.bind(this, this._propertyChanged));
     },
 
     _shutdown: function() {
         this._hideApp();
 
-        this._managerProxy.disconnect(this._propChangeId);
+        this._proxy.disconnect(this._propChangeId);
 
         if (this._operating)
-            this._managerProxy.UnregisterAgentRemote(ConnmanDbus.AGENT_PATH,
+            this._proxy.UnregisterAgentRemote(ConnmanDbus.AGENT_PATH,
 		                                Lang.bind(this, function(err) {
                 if (err != null)
                     global.log("Error unregistering the Agent");
