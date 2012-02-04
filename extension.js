@@ -120,10 +120,10 @@ ConnManager.prototype = {
 
     _init: function() {
         ConnmanApplet.ConnmanApp.prototype._init.call(this);
-        this._state = ConnManState.OFFLINE;
         this._services = {};
-        this._offlineMode = false;
-        this._sesionMode = false;
+        this.State = ConnManState.OFFLINE;
+        this.OfflineMode = false;
+        this.SessionMode = false;
         this._operating = false;
         this._error = false;
         this._agent = new Agent();
@@ -157,8 +157,14 @@ ConnManager.prototype = {
                 return;
             }
 
-            for (let prop in properties)
-                this._processProperty(prop, properties[prop]);
+            for (let prop in properties) {
+                if (prop == 'Services')
+                    this._processServices(properties[prop]);
+                else
+                    this[prop] = properties[prop];
+            }
+
+            this._updateStateIcon();
         }));
     },
 
@@ -178,8 +184,8 @@ ConnManager.prototype = {
 
         path = service.getPath();
 
-        if (this._services[path] != null) {
-            /* Service is already added */
+        if (path in this._services) {
+            //* TODO: Destroy the service obj */
             return;
         }
 
@@ -189,23 +195,10 @@ ConnManager.prototype = {
     },
 
     _processServices: function(services) {
-        for (let i = 0; i < services.length; i++)
+        for (let i = 0; i < services.length; i++) {
+            if (!(services[i] in this._services))
                 new Service(services[i], Lang.bind(this, this._addService_cb));
-    },
-
-    _processProperty: function(property, value) {
-        if (property == 'Services')
-            this._processServices(value);
-        else if (property == 'State') {
-            this._state = value;
-            this._updateStateIcon();
-        } else if (property == 'OfflineMode') {
-            this._offlineMode = value;
-            this._updateStateIcon();
-        } else if (property == 'SessionMode')
-            this._sesionMode = value;
-        else
-            global.log('Unmanaged property: ' + property);
+        }
     },
 
     _updateStateIcon: function() {
@@ -214,21 +207,28 @@ ConnManager.prototype = {
             return;
         }
 
-        if (this._offlineMode) {
+        if (this.OfflineMode) {
             this.setIcon(ConnmanApplet.NetStatIcon.NETOFFLINE);
             return;
         }
 
-        if (this._state == ConnManState.OFFLINE)
+        if (this.State == ConnManState.OFFLINE)
             this.setIcon(ConnmanApplet.NetStatIcon.NETIDLE);
-        else if (this._state == ConnManState.ONLINE)
+        else if (this.State == ConnManState.ONLINE)
             this.setIcon(ConnmanApplet.NetStatIcon.NETTRANSRECV);
         else
-            global.log('Unexpected state: ' + this._state);
+            global.log('Unexpected state: ' + this.State);
     },
 
     _propertyChanged: function(dbus, property, value) {
-        this._processProperty(property, value);
+        if (property == 'Services')
+            this._processServices(value);
+        else
+            this[prop] = value;
+
+        if (property == 'State' || property == 'OfflineMode' ||
+                                                    property == 'SessionMode')
+            this._updateStateIcon();
     },
 
     _resume: function() {
