@@ -24,14 +24,27 @@ const EXTENSION_DIR = "gnome_connman@extensions.com";
 
 const DBus = imports.dbus;
 const Lang = imports.lang;
+const St = imports.gi.St;
 
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
 const ConnmanDbus = Extension.connmanDbus;
 
 const PopupMenu = imports.ui.popupMenu;
 
+function signalToIcon(value) {
+    if (value > 80)
+        return 'network-wireless-signal-excellent';
+    if (value > 55)
+        return 'network-wireless-signal-good';
+    if (value > 30)
+        return 'network-wireless-signal-ok';
+    if (value > 5)
+        return 'network-wireless-signal-weak';
+    return 'none';
+}
+
 function ServiceItem() {
-    this._init.apply(this);
+    this._init.apply(this, arguments);
 }
 
 ServiceItem.prototype = {
@@ -40,6 +53,35 @@ ServiceItem.prototype = {
     _init: function(service) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
         this._service = service;
+
+        this._createItem();
+    },
+
+    _createItemWifi: function () {
+        this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
+        this._label = new St.Label({ text: this._service.Name });
+
+        this._icon = new St.Icon({ icon_name: signalToIcon(this._service.Strength),
+                                   icon_type: St.IconType.SYMBOLIC,
+                                   style_class: 'popup-menu-icon' });
+
+        this._box.add_actor(this._icon);
+        this._box.add_actor(this._label);
+        this.addActor(this._box);
+    },
+
+    _createItem: function () {
+        if (this._service.Type == 'wifi') {
+            this._createItemWifi();
+            return;
+        }
+
+        /* Add more services for ethernet, bluetooth, etc */
+        global.log('TODO: Add service item for ' + this._service.Type);
+        this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
+        this._label = new St.Label({ text: this._service.Name });
+        this._box.add_actor(this._label);
+        this.addActor(this._box);
     }
 };
 

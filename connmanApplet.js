@@ -60,7 +60,7 @@ ConnmanApp.prototype = {
     },
 
     _addService: function(service) {
-        this._items[this._index] = new PopupMenu.PopupMenuItem(service.Name);
+        this._items[this._index] = new Service.ServiceItem(service);
         this.menu.addMenuItem(this._items[this._index]);
         this._index++;
     },
