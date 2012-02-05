@@ -58,9 +58,6 @@ ServiceItem.prototype = {
     },
 
     _createItemWifi: function () {
-        this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
-        this._label = new St.Label({ text: this._service.Name });
-
         this._icon = new St.Icon({ icon_name: signalToIcon(this._service.Strength),
                                    icon_type: St.IconType.SYMBOLIC,
                                    style_class: 'popup-menu-icon' });
@@ -70,19 +67,38 @@ ServiceItem.prototype = {
         this.addActor(this._box);
     },
 
-    _createItem: function () {
-        if (this._service.Type == 'wifi') {
-            this._createItemWifi();
-            return;
-        }
-
-        /* Add more services for ethernet, bluetooth, etc */
-        global.log('TODO: Add service item for ' + this._service.Type);
-        this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
-        this._label = new St.Label({ text: this._service.Name });
+    _createItemEthernet: function () {
+        this._icon = new St.Icon({ icon_name: 'network-wired',
+                                   icon_type: St.IconType.SYMBOLIC,
+                                   style_class: 'popup-menu-icon' });
+        this._box.add_actor(this._icon);
         this._box.add_actor(this._label);
         this.addActor(this._box);
+    },
+
+    _createItem: function () {
+        this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
+        this._label = new St.Label({ text: this._service.Name });
+
+        switch(this._service.Type) {
+        case ServiceType.WIFI:
+            this._createItemWifi();
+            break;
+        case ServiceType.ETHERNET:
+            this._createItemWifi();
+            break;
+        default: /* Add more services for ethernet, bluetooth, etc */
+            global.log('TODO: Add service item for ' + this._service.Type);
+            this._box.add_actor(this._label);
+            this.addActor(this._box);
+            break;
+        }
     }
+};
+
+const ServiceType = {
+    ETHERNET: 'ethernet',
+    WIFI: 'wifi',
 };
 
 const ServiceState = {
