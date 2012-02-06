@@ -121,7 +121,6 @@ Service.prototype = {
         this._cb = cb;
         this._proxy = new ConnmanDbus.ServiceProxy(DBus.system,
                                         ConnmanDbus.MANAGER_SERVICE, path);
-
         this._proxy.GetPropertiesRemote(Lang.bind(this,
                                                     function(properties, err) {
             if (err != null) {
@@ -132,8 +131,16 @@ Service.prototype = {
             for (let prop in properties)
                 this[prop] = properties[prop];
 
-            this._cb(this, null);
+            if (!this._cb(this, null))
+                return;
+
+            this._propChangeId = this._proxy.connect('PropertyChanged',
+                                      Lang.bind(this, this._propertyChanged));
         }));
+    },
+
+    _propertyChanged: function(dbus, property, value) {
+        global.log('Service property ' + property + ' changed');
     },
 
     getPath: function() {

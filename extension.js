@@ -116,17 +116,18 @@ ConnManager.prototype = {
         if (err != null) {
             /* TODO: Destroy the service obj */
             global.log(err);
-            return;
+            return false;
         }
 
         path = service.getPath();
         if (path in this._services) {
             //* TODO: Destroy the service obj */
-            return;
+            return false;
         }
 
         this._services[path] = service;
         this._addService(service);
+        return true;
     },
 
     _processServices: function(services) {
