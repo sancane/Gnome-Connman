@@ -78,7 +78,8 @@ ServiceItem.prototype = {
 
     _createItem: function () {
         this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
-        this._label = new St.Label({ text: this._service.Name });
+        this._label = new St.Label({ text: this._service.Name != undefined ?
+                                            this._service.Name : '<unknown>' });
 
         switch(this._service.Type) {
         case ServiceType.WIFI:
