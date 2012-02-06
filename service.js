@@ -65,6 +65,23 @@ ServiceItem.prototype = {
         this._box.add_actor(this._icon);
         this._box.add_actor(this._label);
         this.addActor(this._box);
+        this._service.addPropertyWatcher(['Name', 'State', 'Strength'],
+                                   Lang.bind(this, function(property, value) {
+            switch(property) {
+                case 'Name':
+                this._label.set_text(value);
+                break;
+            case 'Strength':
+                this._icon.set_icon_name(signalToIcon(value));
+                break;
+            case 'State':
+                /* TODO: */
+                break;
+            default:
+                global.log('Unmanaged property ' + property);
+                return;
+            }
+        }));
     },
 
     _createItemEthernet: function () {
@@ -74,6 +91,20 @@ ServiceItem.prototype = {
         this._box.add_actor(this._icon);
         this._box.add_actor(this._label);
         this.addActor(this._box);
+        this._service.addPropertyWatcher(['Name', 'State'], Lang.bind(this,
+                                                    function(property, value) {
+            switch(property) {
+                case 'Name':
+                this._label.set_text(value);
+                break;
+            case 'State':
+                /* TODO: */
+                break;
+            default:
+                global.log('Unmanaged property ' + property);
+                return;
+            }
+        }));
     },
 
     _createItem: function () {
@@ -119,6 +150,7 @@ Service.prototype = {
     _init: function(path, cb) {
         this._path = path;
         this._cb = cb;
+        this._watchers = [];
         this._proxy = new ConnmanDbus.ServiceProxy(DBus.system,
                                         ConnmanDbus.MANAGER_SERVICE, path);
         this._proxy.GetPropertiesRemote(Lang.bind(this,
@@ -139,8 +171,26 @@ Service.prototype = {
         }));
     },
 
+    addPropertyWatcher: function(properties, cb) {
+        this._watchers.unshift({ properties : properties, cb : cb });
+    },
+
     _propertyChanged: function(dbus, property, value) {
-        global.log('Service property ' + property + ' changed');
+        this[property] = value;
+
+        for (let i = 0, len = this._watchers.length; i < len; i++) {
+            if (!this._watchers[i])
+                continue;
+
+            for (let j = 0, jlen = this._watchers[i].properties.length;
+                                                            j < jlen; j++) {
+                if (!this._watchers[i].properties[j])
+                    continue;
+
+                if (property == this._watchers[i].properties[j])
+                    this._watchers[i].cb(property, value);
+            }
+        }
     },
 
     getPath: function() {
