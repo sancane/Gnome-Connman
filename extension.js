@@ -112,8 +112,9 @@ ConnManager.prototype = {
 
     _addService_cb: function(service, data, err) {
         if (err != null) {
-            /* TODO: Destroy the service obj */
             global.log(err);
+            delete this._services[data];
+            service.destroy();
         }
 
         this._addServiceItem(service);

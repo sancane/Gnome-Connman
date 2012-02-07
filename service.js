@@ -163,6 +163,7 @@ Service.prototype = {
         this._cb = cb;
         this._data = data;
         this._watchers = [];
+        this._propChangeId = 0;
         this._proxy = new ConnmanDbus.ServiceProxy(DBus.system,
                                         ConnmanDbus.MANAGER_SERVICE, path);
         this._proxy.GetPropertiesRemote(Lang.bind(this,
@@ -175,10 +176,9 @@ Service.prototype = {
             for (let prop in properties)
                 this[prop] = properties[prop];
 
-            this._cb(this, this._data, null);
-
             this._propChangeId = this._proxy.connect('PropertyChanged',
                                       Lang.bind(this, this._propertyChanged));
+            this._cb(this, this._data, null);
         }));
     },
 
@@ -202,6 +202,16 @@ Service.prototype = {
                     this._watchers[i].cb(property, value);
             }
         }
+    },
+
+    destroy: function () {
+        if (this._propChangeId > 0) {
+            this._proxy.disconnect(this._propChangeId);
+            this._propChangeId = 0;
+        }
+
+        this._watchers = [];
+        this._proxy = null;
     }
 };
 
