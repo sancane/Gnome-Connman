@@ -122,7 +122,6 @@ ConnManager.prototype = {
 
     _processServices: function(services) {
         for (let i = 0; i < services.length; i++) {
-        global.log('condition ' + (services[i] in this._services));
             if (!(services[i] in this._services))
                 this._services[services[i]] = new Service.Service(services[i],
                             Lang.bind(this, this._addService_cb), services[i]);
