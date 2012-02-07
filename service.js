@@ -31,17 +31,19 @@ const ConnmanDbus = Extension.connmanDbus;
 
 const PopupMenu = imports.ui.popupMenu;
 
-function signalToIcon(value) {
-    if (value > 80)
-        return 'network-wireless-signal-excellent';
-    if (value > 55)
-        return 'network-wireless-signal-good';
-    if (value > 30)
-        return 'network-wireless-signal-ok';
-    if (value > 5)
-        return 'network-wireless-signal-weak';
-    return 'none';
-}
+const ServiceType = {
+    ETHERNET: 'ethernet',
+    WIFI: 'wifi',
+};
+
+const ServiceState = {
+    IDLE: 'idle',
+    FAILURE: 'failure',
+    ASSOCIATION: 'association',
+    CONFIGURATION: 'configuration',
+    READY: 'ready',
+    ONLINE: 'online',
+};
 
 function ServiceItem() {
     this._init.apply(this, arguments);
@@ -55,10 +57,38 @@ ServiceItem.prototype = {
         this._service = service;
 
         this._createItem();
+    }
+};
+
+function WifiServiceItem() {
+    this._init.apply(this, arguments);
+};
+
+WifiServiceItem.prototype = {
+    __proto__: ServiceItem.prototype,
+
+    _init: function(service) {
+        ServiceItem.prototype._init.call(this, service);
     },
 
-    _createItemWifi: function () {
-        this._icon = new St.Icon({ icon_name: signalToIcon(this._service.Strength),
+    _signalToIcon: function (value) {
+        if (value > 80)
+            return 'network-wireless-signal-excellent';
+        if (value > 55)
+            return 'network-wireless-signal-good';
+        if (value > 30)
+            return 'network-wireless-signal-ok';
+        if (value > 5)
+            return 'network-wireless-signal-weak';
+        return 'none';
+    },
+
+    _createItem: function () {
+        this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
+        this._label = new St.Label({ text: this._service.Name != undefined ?
+                                            this._service.Name : '<unknown>' });
+        this._icon = new St.Icon({ icon_name: this._signalToIcon(
+                                                        this._service.Strength),
                                    icon_type: St.IconType.SYMBOLIC,
                                    style_class: 'popup-menu-icon' });
 
@@ -68,23 +98,38 @@ ServiceItem.prototype = {
         this._service.addPropertyWatcher(['Name', 'State', 'Strength'],
                                    Lang.bind(this, function(property, value) {
             switch(property) {
-                case 'Name':
+            case 'Name':
                 this._label.set_text(value);
                 break;
             case 'Strength':
-                this._icon.set_icon_name(signalToIcon(value));
+                this._icon.set_icon_name(this._signalToIcon(value));
                 break;
             case 'State':
                 /* TODO: */
                 break;
             default:
-                global.log('Unmanaged property ' + property);
+                gglobal.log('Not managed wifi service property ' + property);
                 return;
             }
         }));
     },
+};
 
-    _createItemEthernet: function () {
+function EtherServiceItem() {
+    this._init.apply(this, arguments);
+};
+
+EtherServiceItem.prototype = {
+    __proto__: ServiceItem.prototype,
+
+    _init: function(service) {
+        ServiceItem.prototype._init.call(this, service);
+    },
+
+    _createItem: function () {
+        this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
+        this._label = new St.Label({ text: this._service.Name != undefined ?
+                                            this._service.Name : '<unknown>' });
         this._icon = new St.Icon({ icon_name: 'network-wired',
                                    icon_type: St.IconType.SYMBOLIC,
                                    style_class: 'popup-menu-icon' });
@@ -101,45 +146,11 @@ ServiceItem.prototype = {
                 /* TODO: */
                 break;
             default:
-                global.log('Unmanaged property ' + property);
+                global.log('Not managed ethernet service property ' + property);
                 return;
             }
         }));
     },
-
-    _createItem: function () {
-        this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
-        this._label = new St.Label({ text: this._service.Name != undefined ?
-                                            this._service.Name : '<unknown>' });
-
-        switch(this._service.Type) {
-        case ServiceType.WIFI:
-            this._createItemWifi();
-            break;
-        case ServiceType.ETHERNET:
-            this._createItemWifi();
-            break;
-        default: /* Add more services for ethernet, bluetooth, etc */
-            global.log('TODO: Add service item for ' + this._service.Type);
-            this._box.add_actor(this._label);
-            this.addActor(this._box);
-            break;
-        }
-    }
-};
-
-const ServiceType = {
-    ETHERNET: 'ethernet',
-    WIFI: 'wifi',
-};
-
-const ServiceState = {
-    IDLE: 'idle',
-    FAILURE: 'failure',
-    ASSOCIATION: 'association',
-    CONFIGURATION: 'configuration',
-    READY: 'ready',
-    ONLINE: 'online',
 };
 
 function Service() {
@@ -195,5 +206,20 @@ Service.prototype = {
 
     getPath: function() {
         return this._path;
+    }
+};
+
+function ServiceItemFactory(service) {
+    if (!(service instanceof Service))
+        return null;
+
+    switch(service.Type) {
+    case ServiceType.WIFI:
+        return new WifiServiceItem(service);
+    case ServiceType.ETHERNET:
+        return new EtherServiceItem(service);
+    default:
+        global.log('TODO: Add service item for ' + this._service.Type);
+        return null;
     }
 };

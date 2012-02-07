@@ -60,8 +60,13 @@ ConnmanApp.prototype = {
     },
 
     _addService: function(service) {
-        this._items[this._index] = new Service.ServiceItem(service);
-        this.menu.addMenuItem(this._items[this._index]);
+        let item = Service.ServiceItemFactory(service);
+
+        if (item == null)
+            return;
+
+        this._items[this._index] = item;
+        this.menu.addMenuItem(item);
         this._index++;
     },
 
