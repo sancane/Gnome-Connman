@@ -59,7 +59,7 @@ ConnmanApp.prototype = {
         this._items = [];
     },
 
-    _addService: function(service) {
+    _addServiceItem: function(service) {
         let item = Service.ServiceItemFactory(service);
 
         if (item == null)

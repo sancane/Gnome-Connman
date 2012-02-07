@@ -110,31 +110,21 @@ ConnManager.prototype = {
             this._shutdown();
     },
 
-    _addService_cb: function(service, err) {
-        let path;
-
+    _addService_cb: function(service, data, err) {
         if (err != null) {
             /* TODO: Destroy the service obj */
             global.log(err);
-            return false;
         }
 
-        path = service.getPath();
-        if (path in this._services) {
-            //* TODO: Destroy the service obj */
-            return false;
-        }
-
-        this._services[path] = service;
-        this._addService(service);
-        return true;
+        this._addServiceItem(service);
     },
 
     _processServices: function(services) {
         for (let i = 0; i < services.length; i++) {
+        global.log('condition ' + (services[i] in this._services));
             if (!(services[i] in this._services))
-                new Service.Service(services[i], Lang.bind(this,
-                                                        this._addService_cb));
+                this._services[services[i]] = new Service.Service(services[i],
+                            Lang.bind(this, this._addService_cb), services[i]);
         }
     },
 

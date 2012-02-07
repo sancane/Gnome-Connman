@@ -158,24 +158,24 @@ function Service() {
 };
 
 Service.prototype = {
-    _init: function(path, cb) {
+    _init: function(path, cb, data) {
         this._path = path;
         this._cb = cb;
+        this._data = data;
         this._watchers = [];
         this._proxy = new ConnmanDbus.ServiceProxy(DBus.system,
                                         ConnmanDbus.MANAGER_SERVICE, path);
         this._proxy.GetPropertiesRemote(Lang.bind(this,
                                                     function(properties, err) {
             if (err != null) {
-                this._cb(this, err);
+                this._cb(this, this._data, err);
                 return;
             }
 
             for (let prop in properties)
                 this[prop] = properties[prop];
 
-            if (!this._cb(this, null))
-                return;
+            this._cb(this, this._data, null);
 
             this._propChangeId = this._proxy.connect('PropertyChanged',
                                       Lang.bind(this, this._propertyChanged));
@@ -202,10 +202,6 @@ Service.prototype = {
                     this._watchers[i].cb(property, value);
             }
         }
-    },
-
-    getPath: function() {
-        return this._path;
     }
 };
 
