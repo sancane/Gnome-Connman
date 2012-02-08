@@ -43,7 +43,7 @@ function RequestInputDialog() {
 RequestInputDialog.prototype = {
     __proto__: ModalDialog.ModalDialog.prototype,
 
-    _init: function() {
+    _init: function(service, fields) {
         ModalDialog.ModalDialog.prototype._init.call(this,
                                             { styleClass: 'polkit-dialog' });
         this._wasDismissed = false;
@@ -156,8 +156,9 @@ function Agent() {
 };
 
 Agent.prototype = {
-    _init: function() {
+    _init: function(callback) {
         DBus.system.exportObject(ConnmanDbus.AGENT_PATH, this);
+        this._getService_cb = callback;
     },
 
     _onDialogDone: function(dialog, keepVisible, dismissed) {
@@ -176,8 +177,15 @@ Agent.prototype = {
         global.log('TODO: RequestBrowser');
     },
 
-    RequestInput: function(object, fields) {
-        this._inputDialog = new RequestInputDialog();
+    RequestInput: function(svcPath, fields) {
+        let service = this._getService_cb(svcPath);
+
+        if (service == null) {
+            global.log('No service found ' + svcPath);
+            return null;
+        }
+
+        this._inputDialog = new RequestInputDialog(service, fields);
         this._inputDialog.connect('done', Lang.bind(this, this._onDialogDone));
         this._inputDialog.open();
         return null;

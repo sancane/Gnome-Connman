@@ -57,7 +57,7 @@ ConnManager.prototype = {
         this.SessionMode = false;
         this._operating = false;
         this._error = false;
-        this._agent = new Agent.Agent();
+        this._agent = new Agent.Agent(Lang.bind(this, this._getService));
         this._proxy = new ConnmanDbus.ManagerProxy(DBus.system,
                                               ConnmanDbus.MANAGER_SERVICE,
                                               ConnmanDbus.MANAGER_OBJECT_PATH);
@@ -77,6 +77,15 @@ ConnManager.prototype = {
         this._operating = false;
         if (this.isEnabled())
             this._shutdown();
+    },
+
+    _getService: function(svcPath) {
+        let service = this._services[svcPath];
+
+        if (service)
+            return service;
+        else
+            return null;
     },
 
     _addService_cb: function(service, data, err) {
