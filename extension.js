@@ -42,12 +42,12 @@ const ConnManState = {
 };
 
 function Agent() {
-    this._init();
+    this._init.apply(this, arguments);
 };
 
 Agent.prototype = {
     _init: function() {
-        DBus.session.exportObject(ConnmanDbus.AGENT_PATH, this);
+        DBus.system.exportObject(ConnmanDbus.AGENT_PATH, this);
     },
 
     Release: function() {
