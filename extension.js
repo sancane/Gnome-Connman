@@ -28,6 +28,7 @@ const Lang = imports.lang;
 const St = imports.gi.St;
 
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
+const Agent = Extension.agent;
 const ConnmanApplet = Extension.connmanApplet;
 const ConnmanDbus = Extension.connmanDbus;
 const Service = Extension.service;
@@ -40,38 +41,6 @@ const ConnManState = {
     OFFLINE: 'offline',
     ONLINE: 'online',
 };
-
-function Agent() {
-    this._init.apply(this, arguments);
-};
-
-Agent.prototype = {
-    _init: function() {
-        DBus.system.exportObject(ConnmanDbus.AGENT_PATH, this);
-    },
-
-    Release: function() {
-        global.log('TODO: Release');
-    },
-
-    ReportError: function() {
-        global.log('TODO: ReportError');
-    },
-
-    RequestBrowser: function() {
-        global.log('TODO: RequestBrowser');
-    },
-
-    RequestInput: function() {
-        global.log('TODO: RequestInput');
-    },
-
-    Cancel: function() {
-        global.log('TODO: Cancel');
-    }
-};
-
-DBus.conformExport(Agent.prototype, ConnmanDbus.ConnmanAgent);
 
 function ConnManager() {
     this._init();
@@ -88,7 +57,7 @@ ConnManager.prototype = {
         this.SessionMode = false;
         this._operating = false;
         this._error = false;
-        this._agent = new Agent();
+        this._agent = new Agent.Agent();
         this._proxy = new ConnmanDbus.ManagerProxy(DBus.system,
                                               ConnmanDbus.MANAGER_SERVICE,
                                               ConnmanDbus.MANAGER_OBJECT_PATH);
