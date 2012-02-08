@@ -182,6 +182,13 @@ Service.prototype = {
         }));
     },
 
+    connect: function() {
+        this._proxy.ConnectRemote(Lang.bind(this, function(err) {
+            if (err)
+                global.log('connection fail: ' + err);
+        }));
+    },
+
     addPropertyWatcher: function(properties, cb) {
         this._watchers.unshift({ properties : properties, cb : cb });
     },

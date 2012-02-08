@@ -59,6 +59,11 @@ ConnmanApp.prototype = {
         this._items = [];
     },
 
+    _connectService: function(object, event, service) {
+        /* TODO: Change icon or do something */
+        service.connect();
+    },
+
     _addServiceItem: function(service) {
         let item = Service.ServiceItemFactory(service);
 
@@ -67,6 +72,7 @@ ConnmanApp.prototype = {
 
         this._items[this._index] = item;
         this.menu.addMenuItem(item);
+        item.connect('activate', Lang.bind(this, this._connectService, service));
         this._index++;
     },
 
