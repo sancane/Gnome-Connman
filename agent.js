@@ -23,10 +23,133 @@
 
 const EXTENSION_DIR = "gnome_connman@extensions.com";
 
+const Lang = imports.lang;
+const Signals = imports.signals;
+const Clutter = imports.gi.Clutter;
 const DBus = imports.dbus;
+const Pango = imports.gi.Pango;
+const St = imports.gi.St;
 
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
 const ConnmanDbus = Extension.connmanDbus;
+
+const ModalDialog = imports.ui.modalDialog;
+const ShellEntry = imports.ui.shellEntry;
+
+function RequestInputDialog() {
+    this._init.apply(this, arguments);
+}
+
+RequestInputDialog.prototype = {
+    __proto__: ModalDialog.ModalDialog.prototype,
+
+    _init: function() {
+        ModalDialog.ModalDialog.prototype._init.call(this,
+                                            { styleClass: 'polkit-dialog' });
+        this._wasDismissed = false;
+
+        let mainContentBox = new St.BoxLayout({ style_class: 'polkit-dialog-main-layout',
+                                                vertical: false });
+        this.contentLayout.add(mainContentBox,
+                               { x_fill: true,
+                                 y_fill: true });
+
+        let icon = new St.Icon({ icon_name: 'dialog-password-symbolic' });
+
+        mainContentBox.add(icon,
+                           { x_fill:  true,
+                             y_fill:  false,
+                             x_align: St.Align.END,
+                             y_align: St.Align.START });
+
+        let messageBox = new St.BoxLayout({ style_class: 'polkit-dialog-message-layout',
+                                            vertical: true });
+        mainContentBox.add(messageBox,
+                           { y_align: St.Align.START });
+
+        this._subjectLabel = new St.Label({ style_class: 'polkit-dialog-headline',
+                                            text: 'Authentication Required' });
+
+        messageBox.add(this._subjectLabel,
+                       { y_fill:  false,
+                         y_align: St.Align.START });
+
+        this._descriptionLabel = new St.Label({ style_class: 'polkit-dialog-description',
+                                                text: 'hola mundo' });
+        this._descriptionLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+        this._descriptionLabel.clutter_text.line_wrap = true;
+
+        messageBox.add(this._descriptionLabel,
+                       { y_fill:  true,
+                         y_align: St.Align.START });
+
+        this._passwordBox = new St.BoxLayout({ vertical: false });
+        messageBox.add(this._passwordBox);
+        this._passwordLabel = new St.Label(({ style_class: 'polkit-dialog-password-label' }));
+        this._passwordBox.add(this._passwordLabel);
+        this._passwordEntry = new St.Entry({ style_class: 'polkit-dialog-password-entry',
+                                             text: '',
+                                             can_focus: true});
+        ShellEntry.addContextMenu(this._passwordEntry, { isPassword: true });
+        this._passwordEntry.clutter_text.connect('activate', Lang.bind(this, this._onEntryActivate));
+        this._passwordBox.add(this._passwordEntry,
+                              {expand: true });
+
+        this.setInitialKeyFocus(this._passwordEntry);
+        this._passwordBox.hide();
+
+        this._errorMessageLabel = new St.Label({ style_class: 'polkit-dialog-error-label' });
+        this._errorMessageLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+        this._errorMessageLabel.clutter_text.line_wrap = true;
+        messageBox.add(this._errorMessageLabel);
+        this._errorMessageLabel.hide();
+
+        this._infoMessageLabel = new St.Label({ style_class: 'polkit-dialog-info-label' });
+        this._infoMessageLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+        this._infoMessageLabel.clutter_text.line_wrap = true;
+        messageBox.add(this._infoMessageLabel);
+        this._infoMessageLabel.hide();
+
+        this.setButtons([{ label: 'Accept',
+                           action: Lang.bind(this, this._onAcceptButtonPressed),
+                           key:    Clutter.KEY_Return
+                         },
+                         { label:  'Cancel',
+                           action: Lang.bind(this, this.cancel),
+                           key:    Clutter.Escape
+                         }]);
+
+        this._doneEmitted = false;
+    },
+
+    _onEntryActivate: function() {
+        let passphrase = this._passwordEntry.get_text();
+
+        // When the user responds, dismiss already shown info and
+        // error texts (if any)
+        this._errorMessageLabel.hide();
+        this._infoMessageLabel.hide();
+    },
+
+    _emitDone: function(keepVisible, dismissed) {
+        if (!this._doneEmitted) {
+            this._doneEmitted = true;
+            this.emit('done', keepVisible, dismissed);
+        }
+    },
+
+    _onAcceptButtonPressed: function() {
+        this._onEntryActivate();
+    },
+
+    cancel: function() {
+        this._wasDismissed = true;
+        this.close(global.get_current_time());
+        this._emitDone(false, true);
+    }
+};
+
+Signals.addSignalMethods(RequestInputDialog.prototype);
 
 function Agent() {
     this._init.apply(this, arguments);
@@ -35,6 +158,10 @@ function Agent() {
 Agent.prototype = {
     _init: function() {
         DBus.system.exportObject(ConnmanDbus.AGENT_PATH, this);
+    },
+
+    _onDialogDone: function(dialog, keepVisible, dismissed) {
+         global.log('TODO: _onDialogDone');
     },
 
     Release: function() {
@@ -49,8 +176,11 @@ Agent.prototype = {
         global.log('TODO: RequestBrowser');
     },
 
-    RequestInput: function() {
-        global.log('TODO: RequestInput');
+    RequestInput: function(object, fields) {
+        this._inputDialog = new RequestInputDialog();
+        this._inputDialog.connect('done', Lang.bind(this, this._onDialogDone));
+        this._inputDialog.open();
+        return null;
     },
 
     Cancel: function() {
