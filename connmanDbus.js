@@ -83,7 +83,7 @@ const ServiceInterface = {
         { name: 'GetProperties', inSignature: '', outSignature: 'a{sv}' },
         { name: 'SetProperty', inSignature: 'sv', outSignature: '' },
         { name: 'ClearProperty', inSignature: 's',  outSignature: '' },
-        { name: 'Connect', inSignature: '', outSignature: '' },
+        { name: 'Connect', inSignature: '', outSignature: '', timeout: 120000 },
         { name: 'Disconnect', inSignature: '', outSignature: '' },
         { name: 'Remove', inSignature: '', outSignature: '' },
         { name: 'MoveBefore', inSignature: 'o', outSignature: '' },
