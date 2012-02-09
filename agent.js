@@ -46,7 +46,6 @@ RequestInputDialog.prototype = {
     _init: function(service, fields) {
         ModalDialog.ModalDialog.prototype._init.call(this,
                                             { styleClass: 'polkit-dialog' });
-        this._wasDismissed = false;
 
         let mainContentBox = new St.BoxLayout({ style_class: 'polkit-dialog-main-layout',
                                                 vertical: false });
@@ -131,21 +130,20 @@ RequestInputDialog.prototype = {
         this._infoMessageLabel.hide();
     },
 
-    _emitDone: function(keepVisible, dismissed) {
+    _emitDone: function(dismissed) {
         if (!this._doneEmitted) {
             this._doneEmitted = true;
-            this.emit('done', keepVisible, dismissed);
+            this.emit('done', dismissed);
         }
     },
 
     _onAcceptButtonPressed: function() {
         this._onEntryActivate();
+        this._emitDone(false);
     },
 
     cancel: function() {
-        this._wasDismissed = true;
-        this.close(global.get_current_time());
-        this._emitDone(false, true);
+        this._emitDone(true);
     }
 };
 
@@ -161,8 +159,10 @@ Agent.prototype = {
         this._getService_cb = callback;
     },
 
-    _onDialogDone: function(dialog, keepVisible, dismissed) {
-         global.log('TODO: _onDialogDone');
+    _onDialogDone: function(dialog, dismissed) {
+         this._inputDialog.close(global.get_current_time());
+         this._inputDialog.destroy();
+         this._inputDialog = null;
     },
 
     Release: function() {
