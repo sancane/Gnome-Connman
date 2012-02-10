@@ -58,6 +58,7 @@ RequestInputDialog.prototype = {
                                             { styleClass: 'polkit-dialog' });
         this._reply = {};
         this._entries = {};
+        this._fields = fields;
 
         let mainContentBox = new St.BoxLayout({ style_class: 'polkit-dialog-main-layout',
                                                 vertical: false });
@@ -118,7 +119,7 @@ RequestInputDialog.prototype = {
 
         this.setInitialKeyFocus(this._passwordEntry);
         this._passwordBox.hide();
-
+*/
         this._errorMessageLabel = new St.Label({ style_class: 'polkit-dialog-error-label' });
         this._errorMessageLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this._errorMessageLabel.clutter_text.line_wrap = true;
@@ -130,7 +131,7 @@ RequestInputDialog.prototype = {
         this._infoMessageLabel.clutter_text.line_wrap = true;
         messageBox.add(this._infoMessageLabel);
         this._infoMessageLabel.hide();
-*/
+
         this.setButtons([{ label: 'Accept',
                            action: Lang.bind(this, this._onAcceptButtonPressed),
                            key:    Clutter.KEY_Return
@@ -180,14 +181,64 @@ RequestInputDialog.prototype = {
         return box;
     },
 
+    _showError: function(msg) {
+        this._errorMessageLabel.set_text(msg);
+        this._errorMessageLabel.show();
+    },
+
+    _getRequeriment: function(field) {
+        let arguments = this._fields[field];
+
+        if (!('Requirement' in arguments))
+            return 'undefined';
+
+        return arguments['Requirement'];
+    },
+
+    _processMandatory: function(field) {
+        let value = this._reply[field];
+
+        if (value != '')
+            return true;
+
+        let arguments = this._fields[field];
+        if ('Alternates' in arguments) {
+            /* The mandatory field is not provided but */
+            /* we can still use an alternate one */
+            delete this._reply[field];
+            return true;
+        }
+
+        this._showError('Field ' + this._translate(field) + ' is mandatory');
+        return false;
+    },
+
     _processEntries: function() {
         for (let entry in this._entries)
             this._reply[entry] = this._entries[entry].get_text();
+
+        /* Check user input */
+        for (let field in this._reply) {
+            let req = this._getRequeriment(field);
+
+            switch (req) {
+            case 'Mandatory':
+                if (!this._processMandatory(field))
+                    return false;
+                break;
+            case 'Optional':
+            case 'Alternate':
+            default:
+                global.log('agent: Unexpected requeriment: ' + req);
+                return false;
+            }
+        }
 
         // When the user responds, dismiss already shown info and
         // error texts (if any)
         //this._errorMessageLabel.hide();
         //this._infoMessageLabel.hide();
+        return true;
     },
 
     _emitDone: function(dismissed) {
@@ -198,8 +249,8 @@ RequestInputDialog.prototype = {
     },
 
     _onAcceptButtonPressed: function() {
-        this._processEntries();
-        this._emitDone(false);
+        if (this._processEntries())
+            this._emitDone(false);
     },
 
     cancel: function() {
