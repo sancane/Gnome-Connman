@@ -95,31 +95,7 @@ RequestInputDialog.prototype = {
                          y_align: St.Align.START,
                          y_align: St.Align.START });
         }
-/*
-        this._descriptionLabel = new St.Label({ style_class: 'polkit-dialog-description',
-                                                text: 'hola mundo' });
-        this._descriptionLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this._descriptionLabel.clutter_text.line_wrap = true;
 
-        messageBox.add(this._descriptionLabel,
-                       { y_fill:  true,
-                         y_align: St.Align.START });
-
-        this._passwordBox = new St.BoxLayout({ vertical: false });
-        messageBox.add(this._passwordBox);
-        this._passwordLabel = new St.Label(({ style_class: 'polkit-dialog-password-label' }));
-        this._passwordBox.add(this._passwordLabel);
-        this._passwordEntry = new St.Entry({ style_class: 'polkit-dialog-password-entry',
-                                             text: '',
-                                             can_focus: true});
-        ShellEntry.addContextMenu(this._passwordEntry, { isPassword: true });
-        this._passwordEntry.clutter_text.connect('activate', Lang.bind(this, this._onEntryActivate));
-        this._passwordBox.add(this._passwordEntry,
-                              {expand: true });
-
-        this.setInitialKeyFocus(this._passwordEntry);
-        this._passwordBox.hide();
-*/
         this._errorMessageLabel = new St.Label({ style_class: 'polkit-dialog-error-label' });
         this._errorMessageLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this._errorMessageLabel.clutter_text.line_wrap = true;
