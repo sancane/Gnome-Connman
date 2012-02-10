@@ -86,7 +86,7 @@ RequestInputDialog.prototype = {
                          y_align: St.Align.START });
 
         for (let field in fields) {
-            let element = this._createElement(field, fields[field]);
+            let element = this._createEntry(field, fields[field]);
             if (element != null)
                 this.contentLayout.add(element,
                        { x_fill:  true,
@@ -143,43 +143,41 @@ RequestInputDialog.prototype = {
         this._doneEmitted = false;
     },
 
-    _createPassphraseEntry: function (value) {
-        if (AgentField.PASSPHRASE in this._entries)
+    _translate: function(field) {
+        /* TODO: Set translatable */
+        switch(field) {
+        case AgentField.PASSPHRASE:
+        case AgentField.NAME:
+        case AgentField.IDENTITY:
+        case AgentField.USERNAME:
+        case AgentField.PASSWORD:
+        default:
+            return field;
+        }
+    },
+
+    _createEntry: function(field, value) {
+        if (field in this._entries)
             return null;
 
         let box = new St.BoxLayout({ style_class: 'polkit-dialog-message-layout',
                                                             vertical: false });
 
         let label = new St.Label(({ style_class: 'polkit-dialog-password-label',
-                                    text: 'Passphrase' }));
+                                    text: this._translate(field) }));
 
-        this._entries[AgentField.PASSPHRASE] = new St.Entry({ text: '',
+        this._entries[field] = new St.Entry({ text: '',
                                    style_class: 'polkit-dialog-password-entry',
                                    can_focus: true});
 
-        ShellEntry.addContextMenu(this._entries[AgentField.PASSPHRASE],
-                                                        { isPassword: true });
-        //entry.clutter_text.connect('activate', Lang.bind(this, this._onEntryActivate));
+        if (field == AgentField.PASSPHRASE || field == AgentField.PASSWORD)
+            ShellEntry.addContextMenu(this._entries[field],
+                                    { isPassword: true });
+
         box.add(label);
-        box.add(this._entries[AgentField.PASSPHRASE], {expand: true });
+        box.add(this._entries[field], {expand: true });
 
         return box;
-    },
-
-    _createElement: function(field, value) {
-        switch (field) {
-        case AgentField.PASSPHRASE:
-            return this._createPassphraseEntry(value);
-        case AgentField.NAME:
-        case AgentField.SSID:
-        case AgentField.IDENTITY:
-        case AgentField.WPS:
-        case AgentField.USERNAME:
-        case AgentField.USERNAME:
-        default:
-            global.log('Agent: unknown field ' + field);
-            return null;
-        }
     },
 
     _processEntries: function() {
