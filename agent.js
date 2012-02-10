@@ -145,16 +145,27 @@ RequestInputDialog.prototype = {
 
         this._entries[field] = new St.Entry({ text: '',
                                    style_class: 'polkit-dialog-password-entry',
-                                   can_focus: true});
+                                   can_focus: true,
+                                   reactive: true });
 
         if (field == AgentField.PASSPHRASE || field == AgentField.PASSWORD)
             ShellEntry.addContextMenu(this._entries[field],
                                     { isPassword: true });
 
+        this._entries[field].clutter_text.connect('activate',
+                                        Lang.bind(this, this._hideError));
+        this._entries[field].clutter_text.connect('cursor-event',
+                                        Lang.bind(this, this._hideError));
         box.add(label);
         box.add(this._entries[field], {expand: true });
 
         return box;
+    },
+
+    _hideError: function() {
+        /* When the user responds, dismiss already */
+        /* shown error texts (if any) */
+        this._errorMessageLabel.hide();
     },
 
     _showError: function(msg) {
@@ -210,10 +221,6 @@ RequestInputDialog.prototype = {
             }
         }
 
-        // When the user responds, dismiss already shown info and
-        // error texts (if any)
-        //this._errorMessageLabel.hide();
-        //this._infoMessageLabel.hide();
         return true;
     },
 
