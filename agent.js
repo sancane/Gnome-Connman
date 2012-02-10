@@ -226,10 +226,10 @@ RequestInputDialog.prototype = {
         return true;
     },
 
-    _emitDone: function(dismissed) {
+    _emitDone: function(canceled) {
         if (!this._doneEmitted) {
             this._doneEmitted = true;
-            this.emit('done', dismissed, this._reply);
+            this.emit('done', canceled, this._reply);
         }
     },
 
@@ -255,12 +255,15 @@ Agent.prototype = {
         this._getService_cb = callback;
     },
 
-    _onDialogDone: function(dialog, dismissed, reply, callback) {
-         this._inputDialog.close(global.get_current_time());
-         this._inputDialog.destroy();
-         this._inputDialog = null;
+    _onDialogDone: function(dialog, canceled, reply, callback) {
+        this._inputDialog.close(global.get_current_time());
+        this._inputDialog.destroy();
+        this._inputDialog = null;
 
-         callback(reply);
+        if (canceled)
+            throw new DBus.DBusError(ConnmanDbus.AGENT_ERROR,
+                                                        'Connection canceled');
+        callback(reply);
     },
 
     Release: function() {
@@ -278,11 +281,9 @@ Agent.prototype = {
     RequestInputAsync: function(svcPath, fields, callback) {
         let service = this._getService_cb(svcPath);
 
-        if (service == null) {
-            global.log('No service found ' + svcPath);
-            /* TODO: regturn net.connman.Agent.Error.Canceled */
-            return null;
-        }
+        if (service == null)
+            throw new DBus.DBusError(ConnmanDbus.AGENT_ERROR,
+                                                'Unmanaged service' + svcPath);
 
         this._inputDialog = new RequestInputDialog(service, fields);
         this._inputDialog.connect('done', Lang.bind(this, this._onDialogDone,
