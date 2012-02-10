@@ -36,6 +36,16 @@ const ConnmanDbus = Extension.connmanDbus;
 const ModalDialog = imports.ui.modalDialog;
 const ShellEntry = imports.ui.shellEntry;
 
+const AgentField = {
+    NAME:       'Name',
+    SSID:       'SSID',
+    IDENTITY:   'Identity',
+    PASSPHRASE: 'Passphrase',
+    WPS:        'WPS',
+    USERNAME:   'Username',
+    PASSWORD:   'Password',
+};
+
 function RequestInputDialog() {
     this._init.apply(this, arguments);
 }
@@ -46,6 +56,7 @@ RequestInputDialog.prototype = {
     _init: function(service, fields) {
         ModalDialog.ModalDialog.prototype._init.call(this,
                                             { styleClass: 'polkit-dialog' });
+        this._reply = null;
 
         let mainContentBox = new St.BoxLayout({ style_class: 'polkit-dialog-main-layout',
                                                 vertical: false });
@@ -53,7 +64,7 @@ RequestInputDialog.prototype = {
                                { x_fill: true,
                                  y_fill: true });
 
-        let icon = new St.Icon({ icon_name: 'dialog-password-symbolic' });
+        let icon = new St.Icon({ icon_name: 'dialog-password' });
 
         mainContentBox.add(icon,
                            { x_fill:  true,
@@ -73,6 +84,16 @@ RequestInputDialog.prototype = {
                        { y_fill:  false,
                          y_align: St.Align.START });
 
+        for (let field in fields) {
+            let element = this._createElement(field, fields[field]);
+            if (element != null)
+                this.contentLayout.add(element,
+                       { x_fill:  true,
+                         y_fill:  true,
+                         y_align: St.Align.START,
+                         y_align: St.Align.START });
+        }
+/*
         this._descriptionLabel = new St.Label({ style_class: 'polkit-dialog-description',
                                                 text: 'hola mundo' });
         this._descriptionLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
@@ -108,7 +129,7 @@ RequestInputDialog.prototype = {
         this._infoMessageLabel.clutter_text.line_wrap = true;
         messageBox.add(this._infoMessageLabel);
         this._infoMessageLabel.hide();
-
+*/
         this.setButtons([{ label: 'Accept',
                            action: Lang.bind(this, this._onAcceptButtonPressed),
                            key:    Clutter.KEY_Return
@@ -121,13 +142,49 @@ RequestInputDialog.prototype = {
         this._doneEmitted = false;
     },
 
-    _onEntryActivate: function() {
-        let passphrase = this._passwordEntry.get_text();
+    _createPassphraseEntry: function (value) {
+        let box = new St.BoxLayout({ style_class: 'polkit-dialog-message-layout',
+                                                            vertical: false });
+
+        let label = new St.Label(({ style_class: 'polkit-dialog-password-label',
+                                    text: 'Passphrase' }));
+        this[AgentField.PASSPHRASE] = new St.Entry({ text: '',
+                                   style_class: 'polkit-dialog-password-entry',
+                                   can_focus: true});
+
+        ShellEntry.addContextMenu(this[AgentField.PASSPHRASE], { isPassword: true });
+        //entry.clutter_text.connect('activate', Lang.bind(this, this._onEntryActivate));
+        box.add(label);
+        box.add(this[AgentField.PASSPHRASE], {expand: true });
+
+        return box;
+    },
+
+    _createElement: function(field, value) {
+        global.log('Propiedad: ' + field);
+        switch (field) {
+        case AgentField.PASSPHRASE:
+            return this._createPassphraseEntry(value);
+        case AgentField.NAME:
+        case AgentField.SSID:
+        case AgentField.IDENTITY:
+        case AgentField.WPS:
+        case AgentField.USERNAME:
+        case AgentField.USERNAME:
+        default:
+            global.log('Agent: unknown field ' + field);
+            return null;
+        }
+    },
+
+    _processEntries: function() {
+        if (AgentField.PASSPHRASE in this)
+            global.log('password: ' + this[AgentField.PASSPHRASE].get_text());
 
         // When the user responds, dismiss already shown info and
         // error texts (if any)
-        this._errorMessageLabel.hide();
-        this._infoMessageLabel.hide();
+        //this._errorMessageLabel.hide();
+        //this._infoMessageLabel.hide();
     },
 
     _emitDone: function(dismissed) {
@@ -138,7 +195,7 @@ RequestInputDialog.prototype = {
     },
 
     _onAcceptButtonPressed: function() {
-        this._onEntryActivate();
+        this._processEntries();
         this._emitDone(false);
     },
 
