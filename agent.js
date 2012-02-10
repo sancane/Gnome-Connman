@@ -60,8 +60,8 @@ RequestInputDialog.prototype = {
         this._entries = {};
         this._fields = fields;
 
-        let mainContentBox = new St.BoxLayout({ style_class: 'polkit-dialog-main-layout',
-                                                vertical: false });
+        let mainContentBox = new St.BoxLayout({ vertical: false,
+                                    style_class: 'polkit-dialog-main-layout' });
         this.contentLayout.add(mainContentBox,
                                { x_fill: true,
                                  y_fill: true });
@@ -74,13 +74,13 @@ RequestInputDialog.prototype = {
                              x_align: St.Align.END,
                              y_align: St.Align.START });
 
-        let messageBox = new St.BoxLayout({ style_class: 'polkit-dialog-message-layout',
-                                            vertical: true });
+        let messageBox = new St.BoxLayout({ vertical: true,
+                                style_class: 'polkit-dialog-message-layout' });
         mainContentBox.add(messageBox,
                            { y_align: St.Align.START });
 
-        this._subjectLabel = new St.Label({ style_class: 'polkit-dialog-headline',
-                                            text: 'Authentication Required' });
+        this._subjectLabel = new St.Label({ text: 'Authentication Required',
+                                    style_class: 'polkit-dialog-headline' });
 
         messageBox.add(this._subjectLabel,
                        { y_fill:  false,
@@ -96,17 +96,19 @@ RequestInputDialog.prototype = {
                          y_align: St.Align.START });
         }
 
-        this._errorMessageLabel = new St.Label({ style_class: 'polkit-dialog-error-label' });
-        this._errorMessageLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this._errorMessageLabel.clutter_text.line_wrap = true;
-        messageBox.add(this._errorMessageLabel);
-        this._errorMessageLabel.hide();
+        this._errorMsgLabel = new St.Label({
+                                    style_class: 'polkit-dialog-error-label' });
+        this._errorMsgLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+        this._errorMsgLabel.clutter_text.line_wrap = true;
+        messageBox.add(this._errorMsgLabel);
+        this._errorMsgLabel.hide();
 
-        this._infoMessageLabel = new St.Label({ style_class: 'polkit-dialog-info-label' });
-        this._infoMessageLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this._infoMessageLabel.clutter_text.line_wrap = true;
-        messageBox.add(this._infoMessageLabel);
-        this._infoMessageLabel.hide();
+        this._infoMsgLabel = new St.Label({
+                                    style_class: 'polkit-dialog-info-label' });
+        this._infoMsgLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+        this._infoMsgLabel.clutter_text.line_wrap = true;
+        messageBox.add(this._infoMsgLabel);
+        this._infoMsgLabel.hide();
 
         this.setButtons([{ label: 'Accept',
                            action: Lang.bind(this, this._onAcceptButtonPressed),
@@ -165,12 +167,12 @@ RequestInputDialog.prototype = {
     _hideError: function() {
         /* When the user responds, dismiss already */
         /* shown error texts (if any) */
-        this._errorMessageLabel.hide();
+        this._errorMsgLabel.hide();
     },
 
     _showError: function(msg) {
-        this._errorMessageLabel.set_text(msg);
-        this._errorMessageLabel.show();
+        this._errorMsgLabel.set_text(msg);
+        this._errorMsgLabel.show();
     },
 
     _getRequeriment: function(field) {
@@ -245,7 +247,7 @@ Signals.addSignalMethods(RequestInputDialog.prototype);
 
 function Agent() {
     this._init.apply(this, arguments);
-};
+}
 
 Agent.prototype = {
     _init: function(callback) {
@@ -283,7 +285,8 @@ Agent.prototype = {
         }
 
         this._inputDialog = new RequestInputDialog(service, fields);
-        this._inputDialog.connect('done', Lang.bind(this, this._onDialogDone, callback));
+        this._inputDialog.connect('done', Lang.bind(this, this._onDialogDone,
+                                                                    callback));
         this._inputDialog.open();
     },
 
