@@ -56,7 +56,7 @@ RequestInputDialog.prototype = {
     _init: function(service, fields) {
         ModalDialog.ModalDialog.prototype._init.call(this,
                                             { styleClass: 'polkit-dialog' });
-        this._reply = null;
+        this._reply = {};
 
         let mainContentBox = new St.BoxLayout({ style_class: 'polkit-dialog-main-layout',
                                                 vertical: false });
@@ -161,7 +161,6 @@ RequestInputDialog.prototype = {
     },
 
     _createElement: function(field, value) {
-        global.log('Propiedad: ' + field);
         switch (field) {
         case AgentField.PASSPHRASE:
             return this._createPassphraseEntry(value);
@@ -179,7 +178,7 @@ RequestInputDialog.prototype = {
 
     _processEntries: function() {
         if (AgentField.PASSPHRASE in this)
-            global.log('password: ' + this[AgentField.PASSPHRASE].get_text());
+            this._reply[AgentField.PASSPHRASE] = this[AgentField.PASSPHRASE].get_text();
 
         // When the user responds, dismiss already shown info and
         // error texts (if any)
@@ -190,7 +189,7 @@ RequestInputDialog.prototype = {
     _emitDone: function(dismissed) {
         if (!this._doneEmitted) {
             this._doneEmitted = true;
-            this.emit('done', dismissed);
+            this.emit('done', dismissed, this._reply);
         }
     },
 
@@ -216,10 +215,12 @@ Agent.prototype = {
         this._getService_cb = callback;
     },
 
-    _onDialogDone: function(dialog, dismissed) {
+    _onDialogDone: function(dialog, dismissed, reply, callback) {
          this._inputDialog.close(global.get_current_time());
          this._inputDialog.destroy();
          this._inputDialog = null;
+
+         callback(reply);
     },
 
     Release: function() {
@@ -234,18 +235,18 @@ Agent.prototype = {
         global.log('TODO: RequestBrowser');
     },
 
-    RequestInput: function(svcPath, fields) {
+    RequestInputAsync: function(svcPath, fields, callback) {
         let service = this._getService_cb(svcPath);
 
         if (service == null) {
             global.log('No service found ' + svcPath);
+            /* TODO: regturn net.connman.Agent.Error.Canceled */
             return null;
         }
 
         this._inputDialog = new RequestInputDialog(service, fields);
-        this._inputDialog.connect('done', Lang.bind(this, this._onDialogDone));
+        this._inputDialog.connect('done', Lang.bind(this, this._onDialogDone, callback));
         this._inputDialog.open();
-        return null;
     },
 
     Cancel: function() {
