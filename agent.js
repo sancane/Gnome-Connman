@@ -57,6 +57,7 @@ RequestInputDialog.prototype = {
         ModalDialog.ModalDialog.prototype._init.call(this,
                                             { styleClass: 'polkit-dialog' });
         this._reply = {};
+        this._entries = {};
 
         let mainContentBox = new St.BoxLayout({ style_class: 'polkit-dialog-main-layout',
                                                 vertical: false });
@@ -143,19 +144,24 @@ RequestInputDialog.prototype = {
     },
 
     _createPassphraseEntry: function (value) {
+        if (AgentField.PASSPHRASE in this._entries)
+            return null;
+
         let box = new St.BoxLayout({ style_class: 'polkit-dialog-message-layout',
                                                             vertical: false });
 
         let label = new St.Label(({ style_class: 'polkit-dialog-password-label',
                                     text: 'Passphrase' }));
-        this[AgentField.PASSPHRASE] = new St.Entry({ text: '',
+
+        this._entries[AgentField.PASSPHRASE] = new St.Entry({ text: '',
                                    style_class: 'polkit-dialog-password-entry',
                                    can_focus: true});
 
-        ShellEntry.addContextMenu(this[AgentField.PASSPHRASE], { isPassword: true });
+        ShellEntry.addContextMenu(this._entries[AgentField.PASSPHRASE],
+                                                        { isPassword: true });
         //entry.clutter_text.connect('activate', Lang.bind(this, this._onEntryActivate));
         box.add(label);
-        box.add(this[AgentField.PASSPHRASE], {expand: true });
+        box.add(this._entries[AgentField.PASSPHRASE], {expand: true });
 
         return box;
     },
@@ -177,8 +183,8 @@ RequestInputDialog.prototype = {
     },
 
     _processEntries: function() {
-        if (AgentField.PASSPHRASE in this)
-            this._reply[AgentField.PASSPHRASE] = this[AgentField.PASSPHRASE].get_text();
+        for (let entry in this._entries)
+            this._reply[entry] = this._entries[entry].get_text();
 
         // When the user responds, dismiss already shown info and
         // error texts (if any)
