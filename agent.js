@@ -32,8 +32,11 @@ const St = imports.gi.St;
 
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
 const ConnmanDbus = Extension.connmanDbus;
+const Service = Extension.service;
 const Translate = Extension.translate;
 
+const Main = imports.ui.main;
+const MessageTray = imports.ui.messageTray;
 const ModalDialog = imports.ui.modalDialog;
 const ShellEntry = imports.ui.shellEntry;
 
@@ -250,6 +253,25 @@ RequestInputDialog.prototype = {
 
 Signals.addSignalMethods(RequestInputDialog.prototype);
 
+function AgentTraySource() {
+    this._init();
+}
+
+AgentTraySource.prototype = {
+    __proto__: MessageTray.Source.prototype,
+
+    _init: function() {
+        MessageTray.Source.prototype._init.call(this,
+                                                Translate.CONNECTION_MANAGER);
+
+        let icon = new St.Icon({ icon_name: 'network-transmit-receive',
+                                 icon_type: St.IconType.SYMBOLIC,
+                                 icon_size: this.ICON_SIZE
+                               });
+        this._setSummaryIcon(icon);
+    }
+};
+
 function Agent() {
     this._init.apply(this, arguments);
 }
@@ -271,12 +293,46 @@ Agent.prototype = {
         callback(reply);
     },
 
+    _ensureSource: function() {
+        if (!this._source) {
+            this._source = new AgentTraySource();
+            this._source.connect('destroy', Lang.bind(this, function() {
+                this._source = null;
+            }));
+            Main.messageTray.add(this._source);
+        }
+    },
+
     Release: function() {
         global.log('TODO: Release');
     },
 
-    ReportError: function() {
-        global.log('TODO: ReportError');
+    ReportError: function(svcPath, error) {
+        let service = this._getService_cb(svcPath);
+
+        if (service == null)
+            return;
+
+        this._ensureSource();
+
+        if (this._notification)
+            this._notification.destroy();
+
+        let icon = new St.Icon({ icon_name: 'network-error',
+                                 icon_type: St.IconType.SYMBOLIC,
+                                 icon_size: this._source.ICON_SIZE });
+
+        this._notification = new MessageTray.Notification(this._source,
+                                                Translate.CONNECTION_MANAGER,
+                                                error, { icon: icon });
+
+        this._notification.setUrgency(MessageTray.Urgency.HIGH);
+        this._notification.setTransient(true);
+        this._notification.connect('destroy', function() {
+            this._notification = null;
+        });
+
+        this._source.notify(this._notification);
     },
 
     RequestBrowser: function() {
