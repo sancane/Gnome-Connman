@@ -32,6 +32,7 @@ const St = imports.gi.St;
 
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
 const ConnmanDbus = Extension.connmanDbus;
+const Translate = Extension.translate;
 
 const ModalDialog = imports.ui.modalDialog;
 const ShellEntry = imports.ui.shellEntry;
@@ -79,7 +80,7 @@ RequestInputDialog.prototype = {
         mainContentBox.add(messageBox,
                            { y_align: St.Align.START });
 
-        this._subjectLabel = new St.Label({ text: 'Authentication Required',
+        this._subjectLabel = new St.Label({ text: Translate.AUTH_REQ_MSG,
                                     style_class: 'polkit-dialog-headline' });
 
         messageBox.add(this._subjectLabel,
@@ -110,11 +111,11 @@ RequestInputDialog.prototype = {
         messageBox.add(this._infoMsgLabel);
         this._infoMsgLabel.hide();
 
-        this.setButtons([{ label: 'Accept',
+        this.setButtons([{ label: Translate.ACCEPT,
                            action: Lang.bind(this, this._onAcceptButtonPressed),
                            key:    Clutter.KEY_Return
                          },
-                         { label:  'Cancel',
+                         { label:  Translate.CANCEL,
                            action: Lang.bind(this, this.cancel),
                            key:    Clutter.Escape
                          }]);
@@ -123,13 +124,17 @@ RequestInputDialog.prototype = {
     },
 
     _translate: function(field) {
-        /* TODO: Set translatable */
         switch(field) {
         case AgentField.PASSPHRASE:
+            return Translate.PASSPHRASE;
         case AgentField.NAME:
+            return Translate.NAME;
         case AgentField.IDENTITY:
+            return Translate.IDENTITY;
         case AgentField.USERNAME:
+            return Translate.USERNAME;
         case AgentField.PASSWORD:
+            return Translate.PASSWORD;
         default:
             return field;
         }
@@ -198,7 +203,7 @@ RequestInputDialog.prototype = {
             return true;
         }
 
-        this._showError('Field ' + this._translate(field) + ' is mandatory');
+        this._showError(this._translate(field) + ' ' + Translate.IS_MANDATORY);
         return false;
     },
 

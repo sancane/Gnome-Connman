@@ -28,6 +28,7 @@ const St = imports.gi.St;
 
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
 const ConnmanDbus = Extension.connmanDbus;
+const Translate = Extension.translate;
 
 const PopupMenu = imports.ui.popupMenu;
 
@@ -86,7 +87,7 @@ WifiServiceItem.prototype = {
     _createItem: function () {
         this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
         this._label = new St.Label({ text: this._service.Name != undefined ?
-                                            this._service.Name : '<unknown>' });
+                        this._service.Name : '<' + Translate.UNKNOWN + '>'});
         this._icon = new St.Icon({ icon_name: this._signalToIcon(
                                                         this._service.Strength),
                                    icon_type: St.IconType.SYMBOLIC,
