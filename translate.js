@@ -41,8 +41,10 @@ const CONNECTION_MANAGER = _("Connection Manager");
 const IDENTITY = _("Identity");
 const IS_MANDATORY = _("is mandatory");
 const NAME = _("Name");
+const NETWORK_ERROR = _("Network error");
 const PASSPHRASE = _("Passphrase");
 const PASSWORD = _("Password");
+const RETRY = _("Retry");
 const UNKNOWN = _("Unknown");
 const USERNAME = _("Username");
 

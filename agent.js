@@ -253,6 +253,47 @@ RequestInputDialog.prototype = {
 
 Signals.addSignalMethods(RequestInputDialog.prototype);
 
+function AgentErrorReporter() {
+    this._init.apply(this, arguments);
+}
+
+AgentErrorReporter.prototype = {
+    __proto__: MessageTray.Notification.prototype,
+
+    _init: function(source, service, error, callback) {
+        MessageTray.Notification.prototype._init.call(this, source,
+                                          Translate.CONNECTION_MANAGER,
+                                          service.Name ? service.Name : null);
+        this._callback = callback;
+
+        this.addBody(Translate.NETWORK_ERROR + ': ' + error);
+
+        this.addButton('retry', Translate.RETRY);
+        this.setUrgency(MessageTray.Urgency.HIGH);
+        this.setTransient(true);
+
+        this.connect('action-invoked', Lang.bind(this, function(self, action) {
+            if (action != 'retry')
+                return;
+
+            this._callback = null;
+
+            /* FIXE: This exception is not being thrown */
+            /* into the callback context */
+            throw new DBus.DBusError(ConnmanDbus.AGENT_ERROR_RETRY, 'Retray');
+        }));
+    },
+
+    destroy: function() {
+        if (this._callback != null) {
+            this._callback();
+            this._callback = null;
+        }
+
+        MessageTray.Notification.prototype.destroy.call(this);
+    }
+};
+
 function AgentTraySource() {
     this._init();
 }
@@ -269,6 +310,12 @@ AgentTraySource.prototype = {
                                  icon_size: this.ICON_SIZE
                                });
         this._setSummaryIcon(icon);
+    },
+
+    createNotificationIcon: function() {
+        return new St.Icon({ icon_name: 'network-error',
+                             icon_type: St.IconType.SYMBOLIC,
+                             icon_size: this.ICON_SIZE });
     }
 };
 
@@ -307,31 +354,21 @@ Agent.prototype = {
         global.log('TODO: Release');
     },
 
-    ReportError: function(svcPath, error) {
+    ReportErrorAsync: function(svcPath, error, callback) {
         let service = this._getService_cb(svcPath);
 
-        if (service == null)
+        if (service == null) {
+            callback();
             return;
+        }
 
         this._ensureSource();
 
         if (this._notification)
             this._notification.destroy();
 
-        let icon = new St.Icon({ icon_name: 'network-error',
-                                 icon_type: St.IconType.SYMBOLIC,
-                                 icon_size: this._source.ICON_SIZE });
-
-        this._notification = new MessageTray.Notification(this._source,
-                                                Translate.CONNECTION_MANAGER,
-                                                error, { icon: icon });
-
-        this._notification.setUrgency(MessageTray.Urgency.HIGH);
-        this._notification.setTransient(true);
-        this._notification.connect('destroy', function() {
-            this._notification = null;
-        });
-
+        this._notification = new AgentErrorReporter(this._source, service,
+                                                            error, callback);
         this._source.notify(this._notification);
     },
 
