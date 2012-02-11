@@ -280,7 +280,7 @@ AgentErrorReporter.prototype = {
 
             /* FIXE: This exception is not being thrown */
             /* into the callback context */
-            throw new DBus.DBusError(ConnmanDbus.AGENT_ERROR_RETRY, 'Retray');
+            throw new DBus.DBusError(ConnmanDbus.AGENT_ERROR_RETRY, 'Retry');
         }));
     },
 
