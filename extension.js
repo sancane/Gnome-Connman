@@ -129,7 +129,7 @@ ConnManager.prototype = {
         if (property == 'Services')
             this._processServices(value);
         else
-            this[prop] = value;
+            this[property] = value;
 
         if (property == 'State' || property == 'OfflineMode' ||
                                                     property == 'SessionMode')
