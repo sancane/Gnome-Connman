@@ -100,7 +100,7 @@ let ServiceProxy = DBus.makeProxyClass(ServiceInterface);
 
 const AGENT_PATH = '/org/gnome/ConnmanAgent';
 const AGENT_INTERFACE = 'net.connman.Agent';
-const AGENT_ERROR = 'net.connman.Agent.Error.Canceled';
+const AGENT_ERROR_CANCELED = 'net.connman.Agent.Error.Canceled';
 const AGENT_ERROR_RETRY = 'net.connman.Agent.Error.Retry';
 
 const ConnmanAgent = {

@@ -335,7 +335,7 @@ Agent.prototype = {
         this._inputDialog = null;
 
         if (canceled)
-            throw new DBus.DBusError(ConnmanDbus.AGENT_ERROR,
+            throw new DBus.DBusError(ConnmanDbus.AGENT_ERROR_CANCELED,
                                                         'Connection canceled');
         callback(reply);
     },
@@ -380,7 +380,7 @@ Agent.prototype = {
         let service = this._getService_cb(svcPath);
 
         if (service == null)
-            throw new DBus.DBusError(ConnmanDbus.AGENT_ERROR,
+            throw new DBus.DBusError(ConnmanDbus.AGENT_ERROR_CANCELED,
                                                 'Unmanaged service' + svcPath);
 
         this._inputDialog = new RequestInputDialog(service, fields);
