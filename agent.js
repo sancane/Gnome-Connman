@@ -334,9 +334,13 @@ Agent.prototype = {
         this._inputDialog.destroy();
         this._inputDialog = null;
 
-        if (canceled)
+        if (canceled) {
+            /* FIXE: This exception is not being thrown */
+            /* into the callback context */
             throw new DBus.DBusError(ConnmanDbus.AGENT_ERROR_CANCELED,
                                                         'Connection canceled');
+        }
+
         callback(reply);
     },
 
