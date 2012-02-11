@@ -109,7 +109,7 @@ WifiServiceItem.prototype = {
                 /* TODO: */
                 break;
             default:
-                gglobal.log('Not managed wifi service property ' + property);
+                global.log('Not managed wifi service property ' + property);
                 return;
             }
         }));
