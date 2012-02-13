@@ -62,7 +62,6 @@ RequestInputDialog.prototype = {
                                             { styleClass: 'polkit-dialog' });
         this._reply = {};
         this._entries = {};
-        this._alternates = {};
         this._fields = fields;
 
         let mainContentBox = new St.BoxLayout({ vertical: false,
@@ -193,29 +192,30 @@ RequestInputDialog.prototype = {
         return arguments['Requirement'];
     },
 
-    _addToAlternates: function(field, alternates) {
-        if (!(field in this._alternates))
-            this._alternates[field] = alternates;
-
-        /* TODO: Check if alternate fields rely on other fields to check if
-        /* they should also be included here */
-    },
-
     _processMandatory: function(field) {
-        let value = this._reply[field];
+        let value = this._entries[field].get_text();
 
-        if (value != '')
+        if (value) {
+            this._reply[field] = value;
             return true;
+        }
 
         let arguments = this._fields[field];
-        if ('Alternates' in arguments) {
-            /* The mandatory field is not provided but */
-            /* we can still use an alternate one */
-            /* TODO: Check is an alternate field is already */
-            /* in the reply before adding it to alternates */
-            this._addToAlternates(field, arguments['Alternates']);
-            delete this._reply[field];
-            return true;
+        if (!('Alternates' in arguments)) {
+            /* This mandatory field hasn't got alternates */
+            this._showError(this._translate(field) + ' ' +
+                                                        Translate.IS_MANDATORY);
+            return false;
+        }
+
+        /* Check for a valid alternate field */
+        let alternates = arguments['Alternates'];
+        for (let i = 0, len = alternates.length; i < len; i++) {
+            let alt = alternates[i];
+            if (alt in this._entries && this._entries[alt].get_text()) {
+                this._reply[alt] = this._entries[alt].get_text();
+                return true;
+            }
         }
 
         this._showError(this._translate(field) + ' ' + Translate.IS_MANDATORY);
@@ -223,35 +223,30 @@ RequestInputDialog.prototype = {
     },
 
     _processOptional: function(field) {
-        let value = this._reply[field];
+        let value = this._entries[field].get_text();
 
-        if (!value) {
-            /* The optional field is not provided so */
-            /* we don't need to set it in the reply */
-            delete this._reply[field];
-        }
+        if (value)
+            this._reply[field] = value;
     },
 
     _processEntries: function() {
-        for (let entry in this._entries)
-            this._reply[entry] = this._entries[entry].get_text();
-
-        /* Check user input */
-        for (let field in this._reply) {
+        for (let field in this._entries) {
             let req = this._getRequeriment(field);
-
             switch (req) {
-            case 'Mandatory':
+            case 'mandatory':
                 if (!this._processMandatory(field))
                     return false;
                 break;
-            case 'Optional':
+            case 'optional':
                 this._processOptional(field);
                 break;
-            case 'Alternate':
+            case 'alternate':
+                /* Ignored. Alternate values are set in the reply */
+                /* only when a mandatory field requires it */
+                break;
             default:
                 global.log('agent: Unexpected requeriment: ' + req);
-                return false;
+                break;
             }
         }
 
