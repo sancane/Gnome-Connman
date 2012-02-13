@@ -62,6 +62,7 @@ RequestInputDialog.prototype = {
                                             { styleClass: 'polkit-dialog' });
         this._reply = {};
         this._entries = {};
+        this._alternates = {};
         this._fields = fields;
 
         let mainContentBox = new St.BoxLayout({ vertical: false,
@@ -192,6 +193,14 @@ RequestInputDialog.prototype = {
         return arguments['Requirement'];
     },
 
+    _addToAlternates: function(field, alternates) {
+        if (!(field in this._alternates))
+            this._alternates[field] = alternates;
+
+        /* TODO: Check if alternate fields rely on other fields to check if
+        /* they should also be included here */
+    },
+
     _processMandatory: function(field) {
         let value = this._reply[field];
 
@@ -202,6 +211,9 @@ RequestInputDialog.prototype = {
         if ('Alternates' in arguments) {
             /* The mandatory field is not provided but */
             /* we can still use an alternate one */
+            /* TODO: Check is an alternate field is already */
+            /* in the reply before adding it to alternates */
+            this._addToAlternates(field, arguments['Alternates']);
             delete this._reply[field];
             return true;
         }
