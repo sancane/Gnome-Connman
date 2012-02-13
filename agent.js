@@ -210,6 +210,16 @@ RequestInputDialog.prototype = {
         return false;
     },
 
+    _processOptional: function(field) {
+        let value = this._reply[field];
+
+        if (!value) {
+            /* The optional field is not provided so */
+            /* we don't need to set it in the reply */
+            delete this._reply[field];
+        }
+    },
+
     _processEntries: function() {
         for (let entry in this._entries)
             this._reply[entry] = this._entries[entry].get_text();
@@ -224,6 +234,8 @@ RequestInputDialog.prototype = {
                     return false;
                 break;
             case 'Optional':
+                this._processOptional(field);
+                break;
             case 'Alternate':
             default:
                 global.log('agent: Unexpected requeriment: ' + req);
