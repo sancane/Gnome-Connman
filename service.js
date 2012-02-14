@@ -24,6 +24,7 @@ const EXTENSION_DIR = "gnome_connman@extensions.com";
 
 const DBus = imports.dbus;
 const Lang = imports.lang;
+const Signals = imports.signals;
 const St = imports.gi.St;
 
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
@@ -58,6 +59,13 @@ ServiceItem.prototype = {
         this._service = service;
 
         this._createItem();
+        this._service.connect('property-changed', Lang.bind(this,
+                                                function(obj, property, value) {
+            if (property != 'State')
+                return;
+
+            global.log('State = ' + value);
+        }));
     }
 };
 
@@ -96,8 +104,8 @@ WifiServiceItem.prototype = {
         this._box.add_actor(this._icon);
         this._box.add_actor(this._label);
         this.addActor(this._box);
-        this._service.addPropertyWatcher(['Name', 'State', 'Strength'],
-                                   Lang.bind(this, function(property, value) {
+        this._service.connect('property-changed', Lang.bind(this,
+                                                function(obj, property, value) {
             switch(property) {
             case 'Name':
                 this._label.set_text(value);
@@ -105,12 +113,6 @@ WifiServiceItem.prototype = {
             case 'Strength':
                 this._icon.set_icon_name(this._signalToIcon(value));
                 break;
-            case 'State':
-                /* TODO: */
-                break;
-            default:
-                global.log('Not managed wifi service property ' + property);
-                return;
             }
         }));
     },
@@ -137,19 +139,10 @@ EtherServiceItem.prototype = {
         this._box.add_actor(this._icon);
         this._box.add_actor(this._label);
         this.addActor(this._box);
-        this._service.addPropertyWatcher(['Name', 'State'], Lang.bind(this,
-                                                    function(property, value) {
-            switch(property) {
-                case 'Name':
+        this._service.connect('property-changed', Lang.bind(this,
+                                                function(obj, property, value) {
+            if (property == 'Name')
                 this._label.set_text(value);
-                break;
-            case 'State':
-                /* TODO: */
-                break;
-            default:
-                global.log('Not managed ethernet service property ' + property);
-                return;
-            }
         }));
     },
 };
@@ -163,7 +156,6 @@ Service.prototype = {
         this._path = path;
         this._cb = cb;
         this._data = data;
-        this._watchers = [];
         this._propChangeId = 0;
         this._proxy = new ConnmanDbus.ServiceProxy(DBus.system,
                                         ConnmanDbus.MANAGER_SERVICE, path);
@@ -183,33 +175,19 @@ Service.prototype = {
         }));
     },
 
-    connect: function() {
+    connectService: function() {
         this._proxy.ConnectRemote(Lang.bind(this, function(err) {
             if (err)
                 global.log('connection fail: ' + err);
         }));
     },
 
-    addPropertyWatcher: function(properties, cb) {
-        this._watchers.unshift({ properties : properties, cb : cb });
-    },
-
     _propertyChanged: function(dbus, property, value) {
+        if (this[property] == value)
+            return;
+
         this[property] = value;
-
-        for (let i = 0, len = this._watchers.length; i < len; i++) {
-            if (!this._watchers[i])
-                continue;
-
-            for (let j = 0, jlen = this._watchers[i].properties.length;
-                                                            j < jlen; j++) {
-                if (!this._watchers[i].properties[j])
-                    continue;
-
-                if (property == this._watchers[i].properties[j])
-                    this._watchers[i].cb(property, value);
-            }
-        }
+        this.emit('property-changed', property, value);
     },
 
     destroy: function () {
@@ -218,10 +196,10 @@ Service.prototype = {
             this._propChangeId = 0;
         }
 
-        this._watchers = [];
         this._proxy = null;
     }
 };
+Signals.addSignalMethods(Service.prototype);
 
 function ServiceItemFactory(service) {
     if (!(service instanceof Service))

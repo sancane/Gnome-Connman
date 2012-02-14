@@ -61,7 +61,7 @@ ConnmanApp.prototype = {
 
     _connectService: function(object, event, service) {
         /* TODO: Change icon or do something */
-        service.connect();
+        service.connectService();
     },
 
     _addServiceItem: function(service) {
