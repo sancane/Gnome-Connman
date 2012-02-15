@@ -27,21 +27,13 @@ const Lang = imports.lang;
 const St = imports.gi.St;
 
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
+const Icons = Extension.icons;
 const Service = Extension.service;
 
 const Main = imports.ui.main;
 const Panel = imports.ui.panel;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
-
-const NetStatIcon = {
-    NETERROR: 'network-error',
-    NETIDLE: 'network-idle',
-    NETOFFLINE: 'network-offline',
-    NETRECV: 'network-receive',
-    NETTRANS: 'network-transmit',
-    NETTRANSRECV: 'network-transmit-receive'
-};
 
 function ConnmanApp() {
   this._init();
@@ -52,7 +44,7 @@ ConnmanApp.prototype = {
 
     _init: function() {
         PanelMenu.SystemStatusButton.prototype._init.call(this,
-                                                    NetStatIcon.NETOFFLINE);
+                                                Icons.NetworkStatus.OFFLINE);
         this.actor.visible = false;
         this._enabled = false;
         this._index = 0;

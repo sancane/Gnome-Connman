@@ -29,6 +29,7 @@ const St = imports.gi.St;
 
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
 const ConnmanDbus = Extension.connmanDbus;
+const Icons = Extension.icons;
 const Translate = Extension.translate;
 
 const PopupMenu = imports.ui.popupMenu;
@@ -82,13 +83,13 @@ WifiServiceItem.prototype = {
 
     _signalToIcon: function (value) {
         if (value > 80)
-            return 'network-wireless-signal-excellent';
+            return Icons.WifiSignal.EXCELLENT;
         if (value > 55)
-            return 'network-wireless-signal-good';
+            return Icons.WifiSignal.GOOD;
         if (value > 30)
-            return 'network-wireless-signal-ok';
+            return Icons.WifiSignal.OK;
         if (value > 5)
-            return 'network-wireless-signal-weak';
+            return Icons.WifiSignal.WEAK;
         return 'none';
     },
 
@@ -96,8 +97,11 @@ WifiServiceItem.prototype = {
         this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
         this._label = new St.Label({ text: this._service.Name != undefined ?
                         this._service.Name : '<' + Translate.UNKNOWN + '>'});
-        this._icon = new St.Icon({ icon_name: this._signalToIcon(
-                                                        this._service.Strength),
+
+        let icon_name = this._service.Strength ?
+            this._signalToIcon(this._service.Strength) : Icons.WifiSignal.WEAK;
+
+        this._icon = new St.Icon({ icon_name: icon_name,
                                    icon_type: St.IconType.SYMBOLIC,
                                    style_class: 'popup-menu-icon' });
 
@@ -133,7 +137,7 @@ EtherServiceItem.prototype = {
         this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
         this._label = new St.Label({ text: this._service.Name != undefined ?
                                             this._service.Name : '<unknown>' });
-        this._icon = new St.Icon({ icon_name: 'network-wired',
+        this._icon = new St.Icon({ icon_name: Icons.Wired,
                                    icon_type: St.IconType.SYMBOLIC,
                                    style_class: 'popup-menu-icon' });
         this._box.add_actor(this._icon);
