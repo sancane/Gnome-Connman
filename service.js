@@ -90,7 +90,8 @@ WifiServiceItem.prototype = {
             return Icons.WifiSignal.OK;
         if (value > 5)
             return Icons.WifiSignal.WEAK;
-        return 'none';
+
+        return this._icon.get_icon_name();
     },
 
     _createItem: function () {
