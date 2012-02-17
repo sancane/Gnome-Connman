@@ -39,7 +39,7 @@ const ServiceType = {
     WIFI: 'wifi',
 };
 
-const ServiceState = {
+const State = {
     IDLE: 'idle',
     FAILURE: 'failure',
     ASSOCIATION: 'association',
@@ -60,12 +60,47 @@ ServiceItem.prototype = {
         this._service = service;
 
         this._createItem();
+    },
+
+    _statusToIcon: function(status) {
+        switch(status) {
+        case State.IDLE:
+            return Icons.NetworkStatus.IDLE;
+        case State.FAILURE:
+            return Icons.NetworkStatus.ERROR;
+        case State.ASSOCIATION:
+            return Icons.NetworkStatus.TRANS;
+        case State.CONFIGURATION:
+            return Icons.NetworkStatus.RECV;
+        case State.READY:
+            return Icons.NetworkStatus.TRANS;
+        case State.ONLINE:
+            return Icons.NetworkStatus.TRANSRECV;
+        default:
+            return this._statIcon.get_icon_name();
+        }
+    },
+
+    addActor: function(obj) {
+        this._container = new St.BoxLayout({ style_class:
+                                                    'popup-device-menu-item' });
+        let icon_name = this._service.Status ?
+                                    this._statusToIcon(this._service.Status) :
+                                    Icons.NetworkStatus.IDLE;
+        this._statIcon = new St.Icon({ icon_name: icon_name,
+                                   icon_type: St.IconType.SYMBOLIC,
+                                   style_class: 'popup-menu-icon' });
+
+        this._container.add_actor(obj, {expand: true});
+        this._container.add_actor(this._statIcon, {expand: true, x_align: St.Align.START});
+        PopupMenu.PopupBaseMenuItem.prototype.addActor.call(this,
+                                                            this._container);
         this._service.connect('property-changed', Lang.bind(this,
                                                 function(obj, property, value) {
             if (property != 'State')
                 return;
 
-            global.log('State = ' + value);
+            this._statIcon.set_icon_name(this._statusToIcon(value));
         }));
     }
 };
