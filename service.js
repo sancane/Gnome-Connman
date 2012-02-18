@@ -24,6 +24,7 @@ const EXTENSION_DIR = "gnome_connman@extensions.com";
 
 const DBus = imports.dbus;
 const Lang = imports.lang;
+const Mainloop = imports.mainloop;
 const Signals = imports.signals;
 const St = imports.gi.St;
 
@@ -58,38 +59,42 @@ ServiceItem.prototype = {
     _init: function(service) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
         this._service = service;
-
+        this._timeoutId = 0;
         this._createItem();
     },
 
-    _statusToIcon: function(status) {
-        switch(status) {
-        case State.IDLE:
-            return Icons.NetworkStatus.IDLE;
-        case State.FAILURE:
-            return Icons.NetworkStatus.ERROR;
-        case State.ASSOCIATION:
-            return Icons.NetworkStatus.TRANS;
-        case State.CONFIGURATION:
-            return Icons.NetworkStatus.RECV;
-        case State.READY:
-            return Icons.NetworkStatus.TRANS;
-        case State.ONLINE:
-            return Icons.NetworkStatus.TRANSRECV;
-        default:
-            return this._statIcon.get_icon_name();
+    _updateStatusIcon: function() {
+        if (this._service.State == State.ONLINE) {
+            this._statIcon.visible = false;
+            this._timeoutId = 0;
+            return false;
         }
+
+        let icon_name;
+
+        switch(this._statIcon.get_icon_name()) {
+        case Icons.NetworkStatus.TRANS:
+            icon_name = Icons.NetworkStatus.RECV;
+            break;
+        case Icons.NetworkStatus.RECV:
+            icon_name = Icons.NetworkStatus.TRANS;
+            break;
+        default:
+            icon_name = Icons.NetworkStatus.RECV;
+            break;
+        }
+
+        this._statIcon.set_icon_name(icon_name);
+        return true;
     },
 
     addActor: function(obj) {
         this._container = new St.BoxLayout({ style_class:
                                                     'popup-device-menu-item' });
-        let icon_name = this._service.Status ?
-                                    this._statusToIcon(this._service.Status) :
-                                    Icons.NetworkStatus.IDLE;
-        this._statIcon = new St.Icon({ icon_name: icon_name,
+        this._statIcon = new St.Icon({ icon_name: Icons.NetworkStatus.IDLE,
                                    icon_type: St.IconType.SYMBOLIC,
                                    style_class: 'popup-menu-icon' });
+        this._statIcon.visible = false;
 
         this._container.add_actor(obj, {expand: true});
         this._container.add_actor(this._statIcon, {expand: true, x_align: St.Align.START});
@@ -100,7 +105,28 @@ ServiceItem.prototype = {
             if (property != 'State')
                 return;
 
-            this._statIcon.set_icon_name(this._statusToIcon(value));
+            switch(value) {
+            case State.ASSOCIATION:
+            case State.CONFIGURATION:
+            case State.READY:
+                if (this._timeoutId == 0) {
+                    /* Set animation while network is connecting */
+                    this._statIcon.visible = true;
+                    this._timeoutId = Mainloop.timeout_add_seconds(1,
+                                    Lang.bind(this, this._updateStatusIcon));
+                }
+                break;
+            case State.IDLE:
+            case State.FAILURE:
+            case State.ONLINE:
+                if (this._timeoutId > 0) {
+                    /* Stop animation */
+                    Mainloop.source_remove(this._timeoutId);
+                    this._statIcon.visible = false;
+                    this._timeoutId = 0;
+                }
+                break;
+            }
         }));
     }
 };
