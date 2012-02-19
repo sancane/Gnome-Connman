@@ -60,7 +60,6 @@ ServiceItem.prototype = {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
         this._service = service;
         this._timeoutId = 0;
-        this._createItem();
     },
 
     _updateStatusIcon: function() {
@@ -135,22 +134,7 @@ WifiServiceItem.prototype = {
 
     _init: function(service) {
         ServiceItem.prototype._init.call(this, service);
-    },
 
-    _signalToIcon: function (value) {
-        if (value > 80)
-            return Icons.WifiSignal.EXCELLENT;
-        if (value > 55)
-            return Icons.WifiSignal.GOOD;
-        if (value > 30)
-            return Icons.WifiSignal.OK;
-        if (value > 5)
-            return Icons.WifiSignal.WEAK;
-
-        return this._icon.get_icon_name();
-    },
-
-    _createItem: function () {
         this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
         this._label = new St.Label({ text: this._service.Name != undefined ?
                         this._service.Name : '<' + Translate.UNKNOWN + '>'});
@@ -178,6 +162,19 @@ WifiServiceItem.prototype = {
             }
         }));
     },
+
+    _signalToIcon: function (value) {
+        if (value > 80)
+            return Icons.WifiSignal.EXCELLENT;
+        if (value > 55)
+            return Icons.WifiSignal.GOOD;
+        if (value > 30)
+            return Icons.WifiSignal.OK;
+        if (value > 5)
+            return Icons.WifiSignal.WEAK;
+
+        return this._icon.get_icon_name();
+    }
 };
 
 function EtherServiceItem() {
@@ -189,9 +186,7 @@ EtherServiceItem.prototype = {
 
     _init: function(service) {
         ServiceItem.prototype._init.call(this, service);
-    },
 
-    _createItem: function () {
         this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
         this._label = new St.Label({ text: this._service.Name != undefined ?
                         this._service.Name : '<' + Translate.UNKNOWN + '>' });
@@ -206,7 +201,7 @@ EtherServiceItem.prototype = {
             if (property == 'Name')
                 this._label.set_text(value);
         }));
-    },
+    }
 };
 
 function Service() {
