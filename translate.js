@@ -38,6 +38,7 @@ const ACCEPT = _("Accept");
 const AUTH_REQ_MSG = _("Authentication Required");
 const CANCEL = _("Cancel");
 const CONNECTION_MANAGER = _("Connection Manager");
+const CONFIGURATION = _("Configuration");
 const IDENTITY = _("Identity");
 const IS_MANDATORY = _("is mandatory");
 const NAME = _("Name");

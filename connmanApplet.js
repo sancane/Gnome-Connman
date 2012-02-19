@@ -52,9 +52,12 @@ ConnmanApp.prototype = {
         this._items = [];
 
         this._servicesItem = new PopupMenu.PopupSubMenuMenuItem(
-                                                            Translate.SERVICES);
+                                                    Translate.SERVICES);
+        this._configItem = new PopupMenu.PopupSubMenuMenuItem(
+                                                    Translate.CONFIGURATION);
         this._servicesItem.actor.visible = false;
         this.menu.addMenuItem(this._servicesItem);
+        this.menu.addMenuItem(this._configItem);
     },
 
     _connectService: function(object, event, service) {
