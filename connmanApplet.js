@@ -50,8 +50,10 @@ ConnmanApp.prototype = {
         this._enabled = false;
         this._index = 0;
         this._items = [];
+
         this._servicesItem = new PopupMenu.PopupSubMenuMenuItem(
                                                             Translate.SERVICES);
+        this._servicesItem.actor.visible = false;
         this.menu.addMenuItem(this._servicesItem);
     },
 
@@ -70,6 +72,9 @@ ConnmanApp.prototype = {
         this._servicesItem.menu.addMenuItem(item);
         item.connect('activate', Lang.bind(this, this._connectService, service));
         this._index++;
+
+        if (!this._servicesItem.actor.visible)
+            this._servicesItem.actor.visible = true;
     },
 
     _showApp: function () {
