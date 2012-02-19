@@ -88,18 +88,13 @@ ServiceItem.prototype = {
         return true;
     },
 
-    addActor: function(obj) {
-        this._container = new St.BoxLayout({ style_class:
-                                                    'popup-device-menu-item' });
+    addStatusIcon: function(box) {
         this._statIcon = new St.Icon({ icon_name: Icons.NetworkStatus.IDLE,
                                    icon_type: St.IconType.SYMBOLIC,
                                    style_class: 'popup-menu-icon' });
         this._statIcon.visible = false;
 
-        this._container.add_actor(obj, {expand: true});
-        this._container.add_actor(this._statIcon, {expand: true, x_align: St.Align.START});
-        PopupMenu.PopupBaseMenuItem.prototype.addActor.call(this,
-                                                            this._container);
+        box.add_actor(this._statIcon);
         this._service.connect('property-changed', Lang.bind(this,
                                                 function(obj, property, value) {
             if (property != 'State')
@@ -169,6 +164,7 @@ WifiServiceItem.prototype = {
 
         this._box.add_actor(this._icon);
         this._box.add_actor(this._label);
+        this.addStatusIcon(this._box);
         this.addActor(this._box);
         this._service.connect('property-changed', Lang.bind(this,
                                                 function(obj, property, value) {
