@@ -45,6 +45,7 @@ const NETWORK_ERROR = _("Network error");
 const PASSPHRASE = _("Passphrase");
 const PASSWORD = _("Password");
 const RETRY = _("Retry");
+const SERVICES = _("Services");
 const UNKNOWN = _("Unknown");
 const USERNAME = _("Username");
 

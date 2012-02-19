@@ -29,6 +29,7 @@ const St = imports.gi.St;
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
 const Icons = Extension.icons;
 const Service = Extension.service;
+const Translate = Extension.translate;
 
 const Main = imports.ui.main;
 const Panel = imports.ui.panel;
@@ -49,6 +50,9 @@ ConnmanApp.prototype = {
         this._enabled = false;
         this._index = 0;
         this._items = [];
+        this._servicesItem = new PopupMenu.PopupSubMenuMenuItem(
+                                                            Translate.SERVICES);
+        this.menu.addMenuItem(this._servicesItem);
     },
 
     _connectService: function(object, event, service) {
@@ -63,7 +67,7 @@ ConnmanApp.prototype = {
             return;
 
         this._items[this._index] = item;
-        this.menu.addMenuItem(item);
+        this._servicesItem.menu.addMenuItem(item);
         item.connect('activate', Lang.bind(this, this._connectService, service));
         this._index++;
     },
