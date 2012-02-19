@@ -55,9 +55,16 @@ ConnmanApp.prototype = {
                                                     Translate.SERVICES);
         this._configItem = new PopupMenu.PopupSubMenuMenuItem(
                                                     Translate.CONFIGURATION);
+        this._offLineMode = new PopupMenu.PopupSwitchMenuItem(
+                                                    Translate.OFFLINE, false);
+        this._offLineMode.connect('toggled', Lang.bind(this, function() {
+            global.log('Applet: TODO');
+        }));
+
         this._servicesItem.actor.visible = false;
         this.menu.addMenuItem(this._servicesItem);
         this.menu.addMenuItem(this._configItem);
+        this._configItem.menu.addMenuItem(this._offLineMode);
     },
 
     _connectService: function(object, event, service) {
