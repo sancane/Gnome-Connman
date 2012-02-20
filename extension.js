@@ -29,7 +29,7 @@ const St = imports.gi.St;
 
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
 const Agent = Extension.agent;
-const ConnmanApplet = Extension.connmanApplet;
+const Applet = Extension.applet;
 const ConnmanDbus = Extension.connmanDbus;
 const Icons = Extension.icons;
 const Service = Extension.service;
@@ -192,7 +192,7 @@ function init(metadata) {
 }
 
 function enable() {
-    connman = new ConnmanApplet.Connman();
+    connman = new Applet.Connman();
     Main.panel.addToStatusArea('networkp', connman);
     connman.enable();
 }
