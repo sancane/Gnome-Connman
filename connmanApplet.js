@@ -48,8 +48,6 @@ ConnmanApp.prototype = {
                                                 Icons.NetworkStatus.OFFLINE);
         this.actor.visible = false;
         this._enabled = false;
-        this._index = 0;
-        this._items = [];
 
         this._servicesItem = new PopupMenu.PopupSubMenuMenuItem(
                                                     Translate.SERVICES);
@@ -73,15 +71,13 @@ ConnmanApp.prototype = {
     },
 
     _addServiceItem: function(service) {
-        let item = Service.ServiceItemFactory(service);
+        let item = Service.ServiceItemFactory(service);l
 
         if (item == null)
             return;
 
-        this._items[this._index] = item;
         this._servicesItem.menu.addMenuItem(item);
         item.connect('activate', Lang.bind(this, this._connectService, service));
-        this._index++;
 
         if (!this._servicesItem.actor.visible)
             this._servicesItem.actor.visible = true;
@@ -116,3 +112,4 @@ ConnmanApp.prototype = {
         return this._enabled;
     }
 };
+
