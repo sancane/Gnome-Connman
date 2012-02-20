@@ -36,11 +36,11 @@ const Panel = imports.ui.panel;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 
-function ConnmanApp() {
+function Connman() {
   this._init();
 }
 
-ConnmanApp.prototype = {
+Connman.prototype = {
     __proto__: PanelMenu.SystemStatusButton.prototype,
 
     _init: function() {

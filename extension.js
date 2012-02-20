@@ -36,8 +36,8 @@ const Service = Extension.service;
 
 const Main = imports.ui.main;
 
-let connMan = null;
-
+let connman = null;
+/*
 const ConnManState = {
     OFFLINE: 'offline',
     ONLINE: 'online',
@@ -186,17 +186,18 @@ ConnManager.prototype = {
             }));
     }
 };
-
+*/
 function init(metadata) {
-    global.log('Starting ConnMan extension - version: ' + metadata.version);
-    connMan = new ConnManager();
-    Main.panel.addToStatusArea('networkp', connMan);
+    global.log('Starting Connman extension - version: ' + metadata.version);
 }
 
 function enable() {
-    connMan.enable();
+    connman = new ConnmanApplet.Connman();
+    Main.panel.addToStatusArea('networkp', connman);
+    connman.enable();
 }
 
 function disable() {
-    connMan.disable();
+    connman.disable();
+    connman = null;
 }
