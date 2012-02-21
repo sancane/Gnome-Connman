@@ -194,10 +194,8 @@ function init(metadata) {
 function enable() {
     connman = new Applet.Connman();
     Main.panel.addToStatusArea('networkp', connman);
-    connman.enable();
 }
 
 function disable() {
-    connman.disable();
-    connman = null;
+    connman.destroy();
 }

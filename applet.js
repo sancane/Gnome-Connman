@@ -132,33 +132,8 @@ Connman.prototype = {
             this._servicesItem.actor.visible = true;
     },
 
-    _showApp: function () {
-        if (this._enabled)
-            this.actor.visible = true;
-    },
-
-    _hideApp: function () {
-        this.actor.visible = false;
-    },
-
-    /* Overwrite this method */
-    _shutdown: function() {},
-
-    /* Overwrite this method */
-    _resume: function() {},
-
-    enable: function() {
-        this._enabled = true;
-        this._resume();
-    },
-
-    disable: function() {
-        this._enabled = false;
-        this._shutdown();
-    },
-
-    isEnabled: function() {
-        return this._enabled;
+    destroy: function() {
+        global.log('TODO: Destroy function');
     }
 };
 
