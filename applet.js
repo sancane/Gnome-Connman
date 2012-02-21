@@ -23,10 +23,13 @@
 
 const EXTENSION_DIR = "gnome_connman@extensions.com";
 
+const DBus = imports.dbus;
 const Lang = imports.lang;
+const Signals = imports.signals;
 const St = imports.gi.St;
 
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
+const ConnmanDbus = Extension.connmanDbus;
 const Icons = Extension.icons;
 const Service = Extension.service;
 const Translate = Extension.translate;
@@ -63,6 +66,16 @@ Connman.prototype = {
         this.menu.addMenuItem(this._servicesItem);
         this.menu.addMenuItem(this._configItem);
         this._configItem.menu.addMenuItem(this._offLineMode);
+
+        this._manager = new Manager();
+        this._manager.connect('demon-start', Lang.bind(this, function(obj) {
+            global.log('connman start');
+            this.actor.visible = true;
+        }));
+        this._manager.connect('demon-stop', Lang.bind(this, function(obj) {
+            global.log('connman stop');
+            this.actor.visible = false;
+        }));
     },
 
     _connectService: function(object, event, service) {
@@ -112,4 +125,39 @@ Connman.prototype = {
         return this._enabled;
     }
 };
+
+const ManagerState = {
+    OFFLINE: 'offline',
+    ONLINE: 'online',
+};
+
+function Manager() {
+    this._init.apply(this, arguments);
+}
+
+Manager.prototype = {
+    _init: function() {
+        this._services = {};
+        this.State = ManagerState.OFFLINE;
+        this.OfflineMode = false;
+        this.SessionMode = false;
+
+        this._proxy = new ConnmanDbus.ManagerProxy(DBus.system,
+                                              ConnmanDbus.MANAGER_SERVICE,
+                                              ConnmanDbus.MANAGER_OBJECT_PATH);
+        DBus.system.watch_name(ConnmanDbus.MANAGER_SERVICE,
+                           false, // do not launch a name-owner if none exists
+                           Lang.bind(this, this._onManagerAppeared),
+                           Lang.bind(this, this._onManagerVanished));
+    },
+
+    _onManagerAppeared: function(owner) {
+        this.emit('demon-start');
+    },
+
+    _onManagerVanished: function(oldOwner) {
+        this.emit('demon-stop');
+    },
+};
+Signals.addSignalMethods(Manager.prototype);
 
