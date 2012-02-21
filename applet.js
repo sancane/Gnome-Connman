@@ -29,6 +29,7 @@ const Signals = imports.signals;
 const St = imports.gi.St;
 
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
+const Agent = Extension.agent;
 const ConnmanDbus = Extension.connmanDbus;
 const Icons = Extension.icons;
 const Service = Extension.service;
@@ -49,6 +50,7 @@ Connman.prototype = {
     _init: function() {
         PanelMenu.SystemStatusButton.prototype._init.call(this,
                                                 Icons.NetworkStatus.OFFLINE);
+        this._agent = new Agent.Agent(Lang.bind(this, this._getService));
         this.actor.visible = false;
         this._enabled = false;
 
@@ -69,13 +71,23 @@ Connman.prototype = {
 
         this._manager = new Manager();
         this._manager.connect('demon-start', Lang.bind(this, function(obj) {
-            global.log('connman start');
+            this._manager.proxy.RegisterAgentRemote(ConnmanDbus.AGENT_PATH,
+                                                Lang.bind(this, function(err) {
+                if (err != null)
+                    global.log('Connman: ' + err);
+            }));
             this.actor.visible = true;
         }));
+
         this._manager.connect('demon-stop', Lang.bind(this, function(obj) {
-            global.log('connman stop');
+            this._manager.proxy.UnregisterAgentRemote(ConnmanDbus.AGENT_PATH,
+		                                Lang.bind(this, function(err) {
+                if (err != null)
+                    global.log('Connman: ' + err);
+            }));
             this.actor.visible = false;
         }));
+
         this._manager.connect('property-change', Lang.bind(this,
                                                 function(obj, property, value) {
             if (property == 'State' || property == 'OfflineMode')
@@ -83,13 +95,12 @@ Connman.prototype = {
         }));
     },
 
+    _getService: function(svcPath) {
+        /* TODO */
+        return null;
+    },
+
     _updateStateIcon: function() {
-        /*
-        if (this._error)  {
-            this.setIcon(Icons.NetworkStatus.ERROR);
-            return;
-        }
-        */
         if (this._manager.OfflineMode) {
             this.setIcon(Icons.NetworkStatus.OFFLINE);
             return;
@@ -166,8 +177,7 @@ Manager.prototype = {
         this.State = ManagerState.OFFLINE;
         this.OfflineMode = false;
         this.SessionMode = false;
-
-        this._proxy = new ConnmanDbus.ManagerProxy(DBus.system,
+        this.proxy = new ConnmanDbus.ManagerProxy(DBus.system,
                                               ConnmanDbus.MANAGER_SERVICE,
                                               ConnmanDbus.MANAGER_OBJECT_PATH);
         DBus.system.watch_name(ConnmanDbus.MANAGER_SERVICE,
@@ -188,19 +198,19 @@ Manager.prototype = {
     },
 
     _connectSignals: function() {
-        this._propChangeId = this._proxy.connect('PropertyChanged',
+        this._propChangeId = this.proxy.connect('PropertyChanged',
                                       Lang.bind(this, function(bus, prop, val) {
             this._updateProperty(prop, val);
         }));
     },
 
     _disconnectSignals: function() {
-        this._proxy.disconnect(this._propChangeId);
+        this.proxy.disconnect(this._propChangeId);
     },
 
     _onManagerAppeared: function(owner) {
         this._connectSignals();
-        this._proxy.GetPropertiesRemote(Lang.bind(this,
+        this.proxy.GetPropertiesRemote(Lang.bind(this,
                                                     function(properties, err) {
             if (err != null) {
                 global.log(err);
