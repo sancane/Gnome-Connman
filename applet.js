@@ -76,6 +76,31 @@ Connman.prototype = {
             global.log('connman stop');
             this.actor.visible = false;
         }));
+        this._manager.connect('property-change', Lang.bind(this,
+                                                function(obj, property, value) {
+            if (property == 'State' || property == 'OfflineMode')
+                this._updateStateIcon();
+        }));
+    },
+
+    _updateStateIcon: function() {
+        /*
+        if (this._error)  {
+            this.setIcon(Icons.NetworkStatus.ERROR);
+            return;
+        }
+        */
+        if (this._manager.OfflineMode) {
+            this.setIcon(Icons.NetworkStatus.OFFLINE);
+            return;
+        }
+
+        if (this._manager.State == ManagerState.OFFLINE)
+            this.setIcon(Icons.NetworkStatus.IDLE);
+        else if (this._manager.State == ManagerState.ONLINE)
+            this.setIcon(Icons.NetworkStatus.TRANSRECV);
+        else
+            global.log('Unexpected state: ' + this.State);
     },
 
     _connectService: function(object, event, service) {
@@ -151,11 +176,45 @@ Manager.prototype = {
                            Lang.bind(this, this._onManagerVanished));
     },
 
+    _updateProperty:function(prop, value) {
+        if (prop == 'Services')
+            return;
+
+        if (this[prop] && this[prop] == value)
+            return;
+
+        this[prop] = value;
+        this.emit('property-change', prop, value);
+    },
+
+    _connectSignals: function() {
+        this._propChangeId = this._proxy.connect('PropertyChanged',
+                                      Lang.bind(this, function(bus, prop, val) {
+            this._updateProperty(prop, val);
+        }));
+    },
+
+    _disconnectSignals: function() {
+        this._proxy.disconnect(this._propChangeId);
+    },
+
     _onManagerAppeared: function(owner) {
+        this._connectSignals();
+        this._proxy.GetPropertiesRemote(Lang.bind(this,
+                                                    function(properties, err) {
+            if (err != null) {
+                global.log(err);
+                return;
+            }
+
+            for (let prop in properties)
+                this._updateProperty(prop, properties[prop]);
+        }));
         this.emit('demon-start');
     },
 
     _onManagerVanished: function(oldOwner) {
+        this._disconnectSignals();
         this.emit('demon-stop');
     },
 };
