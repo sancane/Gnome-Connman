@@ -173,7 +173,7 @@ function Manager() {
 
 Manager.prototype = {
     _init: function() {
-        this._services = {};
+        this.Services = [];
         this.State = ManagerState.OFFLINE;
         this.OfflineMode = false;
         this.SessionMode = false;
@@ -227,6 +227,11 @@ Manager.prototype = {
         this._disconnectSignals();
         this.emit('demon-stop');
     },
+
+    destroy: function() {
+        this._disconnectSignals();
+        this.Services = [];
+    }
 };
 Signals.addSignalMethods(Manager.prototype);
 
