@@ -51,6 +51,8 @@ Connman.prototype = {
         PanelMenu.SystemStatusButton.prototype._init.call(this,
                                                 Icons.NetworkStatus.OFFLINE);
         this._agent = new Agent.Agent(Lang.bind(this, this._getService));
+        this._manager = new Manager();
+
         this.actor.visible = false;
         this._enabled = false;
 
@@ -60,7 +62,8 @@ Connman.prototype = {
                                                     Translate.CONFIGURATION);
         this._offLineMode = new PopupMenu.PopupSwitchMenuItem(
                                                     Translate.OFFLINE, false);
-        this._offLineMode.connect('toggled', Lang.bind(this, function() {
+        this._toggleId = this._offLineMode.connect('toggled',
+                                                    Lang.bind(this, function() {
             global.log('Applet: TODO');
         }));
 
@@ -69,8 +72,12 @@ Connman.prototype = {
         this.menu.addMenuItem(this._configItem);
         this._configItem.menu.addMenuItem(this._offLineMode);
 
-        this._manager = new Manager();
-        this._manager.connect('demon-start', Lang.bind(this, function(obj) {
+        this._connectSignals();
+    },
+
+    _connectSignals: function() {
+        this._startId = this._manager.connect('demon-start',
+                                                Lang.bind(this, function(obj) {
             this._manager.proxy.RegisterAgentRemote(ConnmanDbus.AGENT_PATH,
                                                 Lang.bind(this, function(err) {
                 if (err != null)
@@ -79,7 +86,8 @@ Connman.prototype = {
             this.actor.visible = true;
         }));
 
-        this._manager.connect('demon-stop', Lang.bind(this, function(obj) {
+        this._stopId = this._manager.connect('demon-stop',
+                                                Lang.bind(this, function(obj) {
             this._manager.proxy.UnregisterAgentRemote(ConnmanDbus.AGENT_PATH,
 		                                Lang.bind(this, function(err) {
                 if (err != null)
@@ -88,11 +96,17 @@ Connman.prototype = {
             this.actor.visible = false;
         }));
 
-        this._manager.connect('property-change', Lang.bind(this,
-                                                function(obj, property, value) {
+        this._propChangeId = this._manager.connect('property-change',
+                                Lang.bind(this, function(obj, property, value) {
             if (property == 'State' || property == 'OfflineMode')
                 this._updateStateIcon();
         }));
+    },
+
+    _disconnectSignals: function() {
+        this._manager.disconnect(this._startId);
+        this._manager.disconnect(this._stopId);
+        this._manager.disconnect(this._propChangeId);
     },
 
     _getService: function(svcPath) {
@@ -133,7 +147,9 @@ Connman.prototype = {
     },
 
     destroy: function() {
-        global.log('TODO: Destroy function');
+        this._disconnectSignals();
+        this._manager.destroy();
+        this._manager = null;
     }
 };
 
@@ -206,6 +222,8 @@ Manager.prototype = {
     destroy: function() {
         this._disconnectSignals();
         this.Services = [];
+        /* TODO: unwatch_name */
+        this.proxy = null;
     }
 };
 Signals.addSignalMethods(Manager.prototype);
