@@ -41,7 +41,7 @@ const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 
 function Connman() {
-  this._init();
+  this._init.apply(this, arguments);
 }
 
 Connman.prototype = {
