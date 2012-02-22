@@ -50,6 +50,7 @@ Connman.prototype = {
     _init: function() {
         PanelMenu.SystemStatusButton.prototype._init.call(this,
                                                 Icons.NetworkStatus.OFFLINE);
+
         this._agent = new Agent.Agent(Lang.bind(this, this._getService));
         this._manager = new Manager();
 
@@ -147,9 +148,12 @@ Connman.prototype = {
     },
 
     destroy: function() {
+        this._agent.destroy();
+        this._agent = null;
         this._disconnectSignals();
         this._manager.destroy();
         this._manager = null;
+        PanelMenu.SystemStatusButton.prototype.destroy.call(this);
     }
 };
 

@@ -414,6 +414,10 @@ Agent.prototype = {
 
     Cancel: function() {
         global.log('TODO: Cancel');
+    },
+
+    destroy: function() {
+        DBus.session.unexportObject(this);
     }
 };
 
