@@ -23,16 +23,8 @@
 
 const EXTENSION_DIR = "gnome_connman@extensions.com";
 
-const DBus = imports.dbus;
-const Lang = imports.lang;
-const St = imports.gi.St;
-
 const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
-const Agent = Extension.agent;
 const Applet = Extension.applet;
-const ConnmanDbus = Extension.connmanDbus;
-const Icons = Extension.icons;
-const Service = Extension.service;
 
 const Main = imports.ui.main;
 
