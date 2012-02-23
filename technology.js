@@ -53,10 +53,10 @@ TechSwitchMenuItem.prototype = {
     },
 
     toggle: function() {
-        this._technology.proxy.SetPropertyRemote('Powered', this._switch.state,
+        this._technology.proxy.SetPropertyRemote('Powered', !this._switch.state,
                                                 Lang.bind(this, function(err) {
             if (err != null)
-                global.log('Connman: ' + err);
+                global.log('TechnologyItem: ' + err);
         }));
     },
 
