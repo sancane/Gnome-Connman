@@ -211,6 +211,7 @@ Connman.prototype = {
     },
 
     destroy: function() {
+        this._manager.proxy.UnregisterAgentRemote(ConnmanDbus.AGENT_PATH);
         //this._agent.destroy();
         //this._agent = null;
         this._disconnectSignals();
