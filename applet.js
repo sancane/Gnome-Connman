@@ -65,7 +65,12 @@ Connman.prototype = {
                                                     Translate.OFFLINE, false);
         this._toggleId = this._offLineMode.connect('toggled',
                                                     Lang.bind(this, function() {
-            global.log('Applet: TODO');
+            this._manager.proxy.SetPropertyRemote('OfflineMode',
+                                                this._offLineMode.state,
+                                                Lang.bind(this, function(err) {
+                if (err != null)
+                    global.log('Connman: ' + err);
+            }));
         }));
 
         this._servicesItem.actor.visible = false;
