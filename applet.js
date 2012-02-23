@@ -69,6 +69,7 @@ Connman.prototype = {
         }));
 
         this._servicesItem.actor.visible = false;
+        this._configItem.actor.visible = false;
         this.menu.addMenuItem(this._servicesItem);
         this.menu.addMenuItem(this._configItem);
         this._configItem.menu.addMenuItem(this._offLineMode);
@@ -99,8 +100,17 @@ Connman.prototype = {
 
         this._propChangeId = this._manager.connect('property-change',
                                 Lang.bind(this, function(obj, property, value) {
-            if (property == 'State' || property == 'OfflineMode')
+            switch(property) {
+            case 'OfflineMode':
+                this._offLineMode.setToggleState(this._manager.OfflineMode);
+                this._configItem.actor.visible = true;
+            case 'State':
                 this._updateStateIcon();
+                break;
+            default:
+                 global.log('TODO: Process ' + property);
+                break;
+            }
         }));
     },
 
