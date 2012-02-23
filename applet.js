@@ -33,6 +33,7 @@ const Agent = Extension.agent;
 const ConnmanDbus = Extension.connmanDbus;
 const Icons = Extension.icons;
 const Service = Extension.service;
+const Technology = Extension.technology;
 const Translate = Extension.translate;
 
 const Main = imports.ui.main;
