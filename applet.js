@@ -41,6 +41,47 @@ const Panel = imports.ui.panel;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 
+function OfflineSwitchMenuItem() {
+    this._init.apply(this, arguments);
+}
+
+OfflineSwitchMenuItem.prototype = {
+    __proto__: PopupMenu.PopupSwitchMenuItem.prototype,
+
+    _init: function(manager) {
+        PopupMenu.PopupSwitchMenuItem.prototype._init.call(this,
+                                                    Translate.OFFLINE, false);
+        this._manager = manager;
+        this._signalId = this._manager.connect('property-changed',
+                                            Lang.bind(this, this._updateState));
+    },
+
+    _toggle: function() {
+        this._switch.toggle();
+        this.emit('toggled', this._switch.state);
+    },
+
+    toggle: function() {
+        this._manager.proxy.SetPropertyRemote('OfflineMode',
+                                                !this._switch.state,
+                                                Lang.bind(this, function(err) {
+            if (err != null)
+                global.log('OfflineSwitch: ' + err);
+        }));
+    },
+
+    _updateState: function(obj, property, value) {
+        if (property == 'OfflineMode' && this._switch.state != value)
+            this._toggle();
+    },
+
+    destroy: function () {
+        this._proxy.disconnect(this._signalId);
+        this._proxy = null;
+        PopupMenu.PopupSwitchMenuItem.prototype.destroy.call(this);
+    }
+};
+
 function Connman() {
   this._init.apply(this, arguments);
 }
@@ -62,17 +103,7 @@ Connman.prototype = {
                                                     Translate.SERVICES);
         this._configItem = new PopupMenu.PopupSubMenuMenuItem(
                                                     Translate.CONFIGURATION);
-        this._offLineMode = new PopupMenu.PopupSwitchMenuItem(
-                                                    Translate.OFFLINE, false);
-        this._toggleId = this._offLineMode.connect('toggled',
-                                                    Lang.bind(this, function() {
-            this._manager.proxy.SetPropertyRemote('OfflineMode',
-                                                this._offLineMode.state,
-                                                Lang.bind(this, function(err) {
-                if (err != null)
-                    global.log('Connman: ' + err);
-            }));
-        }));
+        this._offLineMode = new OfflineSwitchMenuItem(this._manager);
 
         this._servicesItem.actor.visible = false;
         this._configItem.actor.visible = false;
@@ -108,7 +139,6 @@ Connman.prototype = {
                                 Lang.bind(this, function(obj, property, value) {
             switch(property) {
             case 'OfflineMode':
-                this._offLineMode.setToggleState(this._manager.OfflineMode);
                 this._configItem.actor.visible = true;
             case 'State':
                 this._updateStateIcon();
