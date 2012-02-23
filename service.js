@@ -50,6 +50,7 @@ const State = {
 };
 
 function ServiceItem() {
+    /* TODO: Make this class abstract. See PopupMenuBase */
     this._init.apply(this, arguments);
 }
 
