@@ -136,31 +136,34 @@ Connman.prototype = {
         this._configItem.menu.removeAll();
     },
 
+    _propChanged: function(obj, property, value) {
+        switch(property) {
+        case 'OfflineMode':
+            this._configItem.actor.visible = true;
+        case 'State':
+            this._updateStateIcon();
+            break;
+        default:
+            global.log('TODO: Process ' + property);
+            break;
+        }
+    },
+
+    _techAdded: function(obj, technology) {
+        /* TODO: Check duplicates */
+        item = new Technology.TechSwitchMenuItem(technology);
+        this._configItem.menu.addMenuItem(item);
+    },
+
     _connectSignals: function() {
         this._startId = this._manager.connect('demon-start', Lang.bind(this,
                                                             this._demonStart));
         this._stopId = this._manager.connect('demon-stop', Lang.bind(this,
                                                             this._demonStop));
-
         this._propChangeId = this._manager.connect('property-changed',
-                                Lang.bind(this, function(obj, property, value) {
-            switch(property) {
-            case 'OfflineMode':
-                this._configItem.actor.visible = true;
-            case 'State':
-                this._updateStateIcon();
-                break;
-            default:
-                 global.log('TODO: Process ' + property);
-                break;
-            }
-        }));
-
+                                            Lang.bind(this, this._propChanged));
         this._techAddedId = this._manager.connect('technology-added',
-                                Lang.bind(this, function(obj, technology) {
-            item = new Technology.TechSwitchMenuItem(technology);
-            this._configItem.menu.addMenuItem(item);
-        }));
+                                            Lang.bind(this, this._techAdded));
     },
 
     _disconnectSignals: function() {
