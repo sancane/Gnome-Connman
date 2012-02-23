@@ -305,5 +305,6 @@ Manager.prototype = {
         this.proxy = null;
     }
 };
+
 Signals.addSignalMethods(Manager.prototype);
 
