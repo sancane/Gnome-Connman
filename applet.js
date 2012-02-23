@@ -104,7 +104,7 @@ Connman.prototype = {
             this.actor.visible = false;
         }));
 
-        this._propChangeId = this._manager.connect('property-change',
+        this._propChangeId = this._manager.connect('property-changed',
                                 Lang.bind(this, function(obj, property, value) {
             switch(property) {
             case 'OfflineMode':
@@ -213,7 +213,7 @@ Manager.prototype = {
             return;
 
         this[prop] = value;
-        this.emit('property-change', prop, value);
+        this.emit('property-changed', prop, value);
     },
 
     _connectSignals: function() {
