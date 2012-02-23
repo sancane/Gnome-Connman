@@ -72,7 +72,7 @@ function Technology() {
 
 Technology.prototype = {
     _init: function(path, properties) {
-        this.proxy = new ConnmanDbus.ServiceProxy(DBus.system,
+        this.proxy = new ConnmanDbus.TechnologyProxy(DBus.system,
                                         ConnmanDbus.MANAGER_SERVICE, path);
         this._propChangeId = this.proxy.connect('PropertyChanged',
                                       Lang.bind(this, this._propertyChanged));
