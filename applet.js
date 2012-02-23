@@ -118,12 +118,19 @@ Connman.prototype = {
                 break;
             }
         }));
+
+        this._techAddedId = this._manager.connect('technology-added',
+                                Lang.bind(this, function(obj, technology) {
+            item = new Technology.TechSwitchMenuItem(technology);
+            this._configItem.menu.addMenuItem(item);
+        }));
     },
 
     _disconnectSignals: function() {
         this._manager.disconnect(this._startId);
         this._manager.disconnect(this._stopId);
         this._manager.disconnect(this._propChangeId);
+        this._manager.disconnect(this._techAddedId);
     },
 
     _getService: function(svcPath) {
@@ -185,6 +192,7 @@ function Manager() {
 Manager.prototype = {
     _init: function() {
         this.Services = [];
+        this.Technologies = {};
         this.State = ManagerState.OFFLINE;
         this.OfflineMode = false;
         this.SessionMode = false;
@@ -216,7 +224,9 @@ Manager.prototype = {
 
         this._techAddedId = this.proxy.connect('TechnologyAdded',
                             Lang.bind(this, function(bus, objPath, properties) {
-            global.log('TODO: Added ' + properties['Name']);
+            let technology = new Technology.Technology(objPath, properties);
+            this.Technologies[objPath] = technology;
+            this.emit('technology-added', technology);
         }));
 
         this._techRemovedId = this.proxy.connect('TechnologyRemoved',
