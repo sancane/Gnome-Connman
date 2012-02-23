@@ -76,8 +76,7 @@ OfflineSwitchMenuItem.prototype = {
     },
 
     destroy: function () {
-        this._proxy.disconnect(this._signalId);
-        this._proxy = null;
+        this._manager.disconnect(this._signalId);
         PopupMenu.PopupSwitchMenuItem.prototype.destroy.call(this);
     }
 };
@@ -96,44 +95,54 @@ Connman.prototype = {
         //this._agent = new Agent.Agent(Lang.bind(this, this._getService));
         this._manager = new Manager();
 
-        this.actor.visible = false;
         this._enabled = false;
 
         this._servicesItem = new PopupMenu.PopupSubMenuMenuItem(
                                                     Translate.SERVICES);
         this._configItem = new PopupMenu.PopupSubMenuMenuItem(
                                                     Translate.CONFIGURATION);
-        this._offLineMode = new OfflineSwitchMenuItem(this._manager);
 
-        this._servicesItem.actor.visible = false;
-        this._configItem.actor.visible = false;
         this.menu.addMenuItem(this._servicesItem);
         this.menu.addMenuItem(this._configItem);
-        this._configItem.menu.addMenuItem(this._offLineMode);
 
         this._connectSignals();
+        this._setVisibility();
     },
 
-    _connectSignals: function() {
-        this._startId = this._manager.connect('demon-start',
-                                                Lang.bind(this, function(obj) {
-            this._manager.proxy.RegisterAgentRemote(ConnmanDbus.AGENT_PATH,
+    _setVisibility: function() {
+        this.actor.visible = false;
+        this._configItem.actor.visible = false;
+        this._servicesItem.actor.visible = false;
+    },
+
+    _demonStart: function() {
+        this._manager.proxy.RegisterAgentRemote(ConnmanDbus.AGENT_PATH,
                                                 Lang.bind(this, function(err) {
-                if (err != null)
-                    global.log('Connman: ' + err);
-            }));
-            this.actor.visible = true;
+            if (err != null)
+                global.log('Connman: ' + err);
         }));
 
-        this._stopId = this._manager.connect('demon-stop',
-                                                Lang.bind(this, function(obj) {
-            this._manager.proxy.UnregisterAgentRemote(ConnmanDbus.AGENT_PATH,
+	this._offLineMode = new OfflineSwitchMenuItem(this._manager);
+        this._configItem.menu.addMenuItem(this._offLineMode);
+        this.actor.visible = true;
+    },
+
+    _demonStop: function() {
+        this._manager.proxy.UnregisterAgentRemote(ConnmanDbus.AGENT_PATH,
 		                                Lang.bind(this, function(err) {
                 if (err != null)
                     global.log('Connman: ' + err);
-            }));
-            this.actor.visible = false;
         }));
+
+        this._setVisibility();
+        this._configItem.menu.removeAll();
+    },
+
+    _connectSignals: function() {
+        this._startId = this._manager.connect('demon-start', Lang.bind(this,
+                                                            this._demonStart));
+        this._stopId = this._manager.connect('demon-stop', Lang.bind(this,
+                                                            this._demonStop));
 
         this._propChangeId = this._manager.connect('property-changed',
                                 Lang.bind(this, function(obj, property, value) {
