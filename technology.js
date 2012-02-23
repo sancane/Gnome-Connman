@@ -76,6 +76,9 @@ Technology.prototype = {
                                         ConnmanDbus.MANAGER_SERVICE, path);
         this._propChangeId = this.proxy.connect('PropertyChanged',
                                       Lang.bind(this, this._propertyChanged));
+
+        for (let property in properties)
+            this[property] = properties[property];
     },
 
     _propertyChanged: function(dbus, property, value) {
