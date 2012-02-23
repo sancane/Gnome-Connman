@@ -95,8 +95,6 @@ Connman.prototype = {
         //this._agent = new Agent.Agent(Lang.bind(this, this._getService));
         this._manager = new Manager();
 
-        this._enabled = false;
-
         this._servicesItem = new PopupMenu.PopupSubMenuMenuItem(
                                                     Translate.SERVICES);
         this._configItem = new PopupMenu.PopupSubMenuMenuItem(
