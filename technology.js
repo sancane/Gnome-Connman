@@ -43,8 +43,8 @@ TechSwitchMenuItem.prototype = {
         PopupMenu.PopupSwitchMenuItem.prototype._init.call(this, technology.Name,
                                                             technology.Powered);
         this._technology = technology;
-        this._technology.connect('property-changed', Lang.bind(this,
-                                                            this._updateState));
+        this._signalId = this._technology.connect('property-changed',
+                                        Lang.bind(this, this._updateState));
     },
 
     _toggle: function() {
@@ -63,6 +63,11 @@ TechSwitchMenuItem.prototype = {
     _updateState: function(obj, property, value) {
         if (property == 'Powered')
             this._toggle();
+    },
+
+    destroy: function () {
+        this._technology.disconnect(this._signalId);
+        PopupMenu.PopupSwitchMenuItem.prototype.destroy.call(this);
     }
 }
 
