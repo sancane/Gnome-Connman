@@ -197,10 +197,22 @@ Manager.prototype = {
                                       Lang.bind(this, function(bus, prop, val) {
             this._updateProperty(prop, val);
         }));
+
+        this._techAddedId = this.proxy.connect('TechnologyAdded',
+                            Lang.bind(this, function(bus, objPath, properties) {
+            global.log('TODO: Added ' + properties['Name']);
+        }));
+
+        this._techRemovedId = this.proxy.connect('TechnologyRemoved',
+                            Lang.bind(this, function(bus, objPath, properties) {
+            global.log('TODO: Removed ' + properties['Name']);
+        }));
     },
 
     _disconnectSignals: function() {
         this.proxy.disconnect(this._propChangeId);
+        this.proxy.disconnect(this._techAddedId);
+        this.proxy.disconnect(this._techRemovedId);
     },
 
     _onManagerAppeared: function(owner) {

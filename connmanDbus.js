@@ -50,7 +50,7 @@ const ManagerInterface = {
         ],
     signals: [
         { name: 'PropertyChanged', inSignature: 'sv' },
-        { name: 'TechnologyAdded', inSignature: 'a{sv}' },
+        { name: 'TechnologyAdded', inSignature: 'oa{sv}' },
         { name: 'TechnologyRemoved', inSignature: 'o' },
         ]
 };
