@@ -104,10 +104,10 @@ Connman.prototype = {
         this.menu.addMenuItem(this._configItem);
 
         this._connectSignals();
-        this._setVisibility();
+        this._setInitialVisibility();
     },
 
-    _setVisibility: function() {
+    _setInitialVisibility: function() {
         this.actor.visible = false;
         this._configItem.actor.visible = false;
         this._servicesItem.actor.visible = false;
@@ -132,7 +132,7 @@ Connman.prototype = {
                     global.log('Connman: ' + err);
         }));
 
-        this._setVisibility();
+        this._setInitialVisibility();
         this._configItem.menu.removeAll();
     },
 
