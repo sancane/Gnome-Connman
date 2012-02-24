@@ -155,6 +155,26 @@ Connman.prototype = {
         this._configItem.menu.addMenuItem(item);
     },
 
+    _updateServices: function(obj, services) {
+        /* We can't remove individually elements from a menu  */
+        /* so the only way to keep the menu items sorted is   */
+        /* by removing all elements and inserting them sorted */
+        this._servicesItem.menu.removeAll();
+        global.log('Services: ' + services);
+        for (let i = 0, len = services.length; i < len; i++) {
+            let [path, service] = services[i];
+            let item = Service.ServiceItemFactory(service);
+
+            if (item)
+                this._servicesItem.menu.addMenuItem(item);
+        }
+
+        if (services.length == 0)
+            this._servicesItem.actor.hide();
+        else
+            this._servicesItem.actor.show();
+    },
+
     _connectSignals: function() {
         this._startId = this._manager.connect('demon-start', Lang.bind(this,
                                                             this._demonStart));
@@ -164,6 +184,8 @@ Connman.prototype = {
                                             Lang.bind(this, this._propChanged));
         this._techAddedId = this._manager.connect('technology-added',
                                             Lang.bind(this, this._techAdded));
+        this._techAddedId = this._manager.connect('services-changed',
+                                        Lang.bind(this, this._updateServices));
     },
 
     _disconnectSignals: function() {
@@ -286,7 +308,7 @@ Manager.prototype = {
             let [index, service] = this._getElement(path);
 
             if (index < 0)
-                newList[i] = new Service.Service(path, properties);
+                newList[i] = [path, new Service.Service(path, properties)];
             else {
                 newList[i] = [path, service];
                 delete this.Services[index];
@@ -301,7 +323,7 @@ Manager.prototype = {
         }
 
         this.Services = newList;
-        this.emit('services-changed', technology);
+        this.emit('services-changed', this.Services);
     },
 
     _connectSignals: function() {
