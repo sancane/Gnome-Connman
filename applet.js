@@ -266,6 +266,44 @@ Manager.prototype = {
         this.emit('technology-added', technology);
     },
 
+    _getElement: function(path) {
+        for (let i = 0, len = this.Services.length; i < len; i++) {
+            let [objPath, service] = this.Services[i];
+
+            if (path == objPath)
+                return[i, service];
+        }
+
+        return [-1, null];
+    },
+
+    _addServices: function(services) {
+        let newList = new Array(services.length);
+
+        /* Remove new services */
+        for (let i = 0, len = services.length; i < len; i++) {
+            let [path, properties] = services[i];
+            let [index, service] = this._getElement(path);
+
+            if (index < 0)
+                newList[i] = new Service.Service(path, properties);
+            else {
+                newList[i] = [path, service];
+                delete this.Services[index];
+            }
+        }
+
+        /* Remove remaining services */
+        for (let i = 0, len = this.Services.length; i < len; i++) {
+            let [path, service] = this.Services[i];
+            global.log('Destroy service ' + path);
+            service.destroy();
+        }
+
+        this.Services = newList;
+        this.emit('services-changed', technology);
+    },
+
     _connectSignals: function() {
         this._propChangeId = this.proxy.connect('PropertyChanged',
                                       Lang.bind(this, function(bus, prop, val) {
@@ -311,6 +349,13 @@ Manager.prototype = {
                 let [path, properties] = technologies[i];
                 this._addTechnology(path, properties);
             }
+        }));
+
+        this.proxy.GetServicesRemote(Lang.bind(this, function(services, err) {
+            if (err != null)
+                global.log('GetServices: ' + err);
+
+            this._addServices(services);
         }));
 
         this.emit('demon-start');

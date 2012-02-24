@@ -210,31 +210,18 @@ function Service() {
 };
 
 Service.prototype = {
-    _init: function(path, cb, data) {
-        this._path = path;
-        this._cb = cb;
-        this._data = data;
-        this._propChangeId = 0;
-        this._proxy = new ConnmanDbus.ServiceProxy(DBus.system,
+    _init: function(path, properties) {
+        this.proxy = new ConnmanDbus.ServiceProxy(DBus.system,
                                         ConnmanDbus.MANAGER_SERVICE, path);
-        this._proxy.GetPropertiesRemote(Lang.bind(this,
-                                                    function(properties, err) {
-            if (err != null) {
-                this._cb(this, this._data, err);
-                return;
-            }
-
-            for (let prop in properties)
-                this[prop] = properties[prop];
-
-            this._propChangeId = this._proxy.connect('PropertyChanged',
+        this._propChangeId = this.proxy.connect('PropertyChanged',
                                       Lang.bind(this, this._propertyChanged));
-            this._cb(this, this._data, null);
-        }));
+
+        for (let property in properties)
+            this[property] = properties[property];
     },
 
     connectService: function() {
-        this._proxy.ConnectRemote(Lang.bind(this, function(err) {
+        this.proxy.ConnectRemote(Lang.bind(this, function(err) {
             if (err)
                 global.log('connection fail: ' + err);
         }));
@@ -248,13 +235,9 @@ Service.prototype = {
         this.emit('property-changed', property, value);
     },
 
-    destroy: function () {
-        if (this._propChangeId > 0) {
-            this._proxy.disconnect(this._propChangeId);
-            this._propChangeId = 0;
-        }
-
-        this._proxy = null;
+    destroy: function() {
+        this.proxy.disconnect(this._propChangeId);
+        this.proxy = null;
     }
 };
 Signals.addSignalMethods(Service.prototype);
