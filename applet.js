@@ -317,13 +317,24 @@ Manager.prototype = {
     },
 
     _onManagerVanished: function(oldOwner) {
-        this._disconnectSignals();
+        this._reset();
         this.emit('demon-stop');
     },
 
-    destroy: function() {
+    _reset: function() {
+        for (let technology in this.Technologies)
+            this.Technologies[technology].destroy();
+
+        this.Technologies = {};
         this._disconnectSignals();
-        this.Services = [];
+
+        this.State = ManagerState.OFFLINE;
+        this.OfflineMode = false;
+        this.SessionMode = false;
+    },
+
+    destroy: function() {
+        this._reset();
         /* TODO: unwatch_name */
         this.proxy = null;
     }
