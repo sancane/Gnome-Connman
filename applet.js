@@ -257,6 +257,15 @@ Manager.prototype = {
         this.emit('property-changed', prop, value);
     },
 
+    _addTechnology: function (path, properties) {
+        if (this.Technologies[path])
+            return;
+
+        let technology = new Technology.Technology(path, properties);
+        this.Technologies[path] = technology;
+        this.emit('technology-added', technology);
+    },
+
     _connectSignals: function() {
         this._propChangeId = this.proxy.connect('PropertyChanged',
                                       Lang.bind(this, function(bus, prop, val) {
@@ -264,10 +273,8 @@ Manager.prototype = {
         }));
 
         this._techAddedId = this.proxy.connect('TechnologyAdded',
-                            Lang.bind(this, function(bus, objPath, properties) {
-            let technology = new Technology.Technology(objPath, properties);
-            this.Technologies[objPath] = technology;
-            this.emit('technology-added', technology);
+                            Lang.bind(this, function(bus, path, properties) {
+            this._addTechnology(path, properties);
         }));
 
         this._techRemovedId = this.proxy.connect('TechnologyRemoved',
@@ -294,6 +301,18 @@ Manager.prototype = {
             for (let prop in properties)
                 this._updateProperty(prop, properties[prop]);
         }));
+
+        this.proxy.GetTechnologiesRemote(Lang.bind(this,
+                                                function(technologies, err) {
+            if (err != null)
+                global.log('GetTechnologies: ' + err);
+
+            for (let i = 0, len = technologies.length; i < len; i++) {
+                let [path, properties] = technologies[i];
+                this._addTechnology(path, properties);
+            }
+        }));
+
         this.emit('demon-start');
     },
 
