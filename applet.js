@@ -289,7 +289,7 @@ Manager.prototype = {
     _addServices: function(services) {
         let newList = new Array(services.length);
 
-        /* Remove new services */
+        /* Add new services */
         for (let i = 0, len = services.length; i < len; i++) {
             let [path, properties] = services[i];
             let [index, service] = this._getElement(path);
