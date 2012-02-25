@@ -218,19 +218,6 @@ Connman.prototype = {
         service.connectService();
     },
 
-    _addServiceItem: function(service) {
-        let item = Service.ServiceItemFactory(service);l
-
-        if (item == null)
-            return;
-
-        this._servicesItem.menu.addMenuItem(item);
-        item.connect('activate', Lang.bind(this, this._connectService, service));
-
-        if (!this._servicesItem.actor.visible)
-            this._servicesItem.actor.visible = true;
-    },
-
     destroy: function() {
         this._manager.proxy.UnregisterAgentRemote(ConnmanDbus.AGENT_PATH);
         //this._agent.destroy();
