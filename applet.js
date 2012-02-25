@@ -331,8 +331,7 @@ Manager.prototype = {
         this.proxy.disconnect(this._techRemovedId);
     },
 
-    _onManagerAppeared: function(owner) {
-        this._connectSignals();
+    _getProperties: function() {
         this.proxy.GetPropertiesRemote(Lang.bind(this,
                                                     function(properties, err) {
             if (err != null) {
@@ -343,7 +342,9 @@ Manager.prototype = {
             for (let prop in properties)
                 this._updateProperty(prop, properties[prop]);
         }));
+    },
 
+    _getTechnologies: function() {
         this.proxy.GetTechnologiesRemote(Lang.bind(this,
                                                 function(technologies, err) {
             if (err != null) {
@@ -356,7 +357,9 @@ Manager.prototype = {
                 this._addTechnology(path, properties);
             }
         }));
+    },
 
+    _getServices: function() {
         this.proxy.GetServicesRemote(Lang.bind(this, function(services, err) {
             if (err != null) {
                 global.log('GetServices: ' + err);
@@ -365,6 +368,14 @@ Manager.prototype = {
 
             this._addServices(services);
         }));
+    },
+
+    _onManagerAppeared: function(owner) {
+        this._connectSignals();
+
+        this._getProperties();
+        this._getTechnologies();
+        this._getServices();
 
         this.emit('demon-start');
     },
