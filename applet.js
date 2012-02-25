@@ -270,6 +270,9 @@ Manager.prototype = {
 
     _getElement: function(path) {
         for (let i = 0, len = this.Services.length; i < len; i++) {
+            if (!this.Services[i])
+                continue;
+
             let [objPath, service] = this.Services[i];
 
             if (path == objPath)
@@ -295,8 +298,11 @@ Manager.prototype = {
             }
         }
 
-        /* Remove remaining services */
+        /* Free resources of remaining services */
         for (let i = 0, len = this.Services.length; i < len; i++) {
+            if (!this.Services[i])
+                continue;
+
             let [path, service] = this.Services[i];
             service.destroy();
         }
@@ -323,12 +329,12 @@ Manager.prototype = {
 
         this._svcAddedId = this.proxy.connect('ServicesAdded',
                                     Lang.bind(this, function(bus, services) {
-            global.log('TODO: Service Added');
+            this._getServices();
         }));
 
         this._svcRemovedId = this.proxy.connect('ServicesRemoved',
                                     Lang.bind(this, function(bus, services) {
-            global.log('TODO: Service Removed');
+            this._getServices();
         }));
     },
 
