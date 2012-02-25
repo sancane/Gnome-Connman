@@ -123,7 +123,16 @@ ServiceItem.prototype = {
                 break;
             }
         }));
-    }
+    },
+
+    activate: function(event) {
+        this._service.proxy.ConnectRemote(Lang.bind(this, function(err) {
+            if (err)
+                global.log('Connect: ' + err);
+        }));
+
+        PopupMenu.PopupBaseMenuItem.prototype.activate.call(this, event);
+    },
 };
 
 function WifiServiceItem() {
@@ -218,13 +227,6 @@ Service.prototype = {
 
         for (let property in properties)
             this[property] = properties[property];
-    },
-
-    connectService: function() {
-        this.proxy.ConnectRemote(Lang.bind(this, function(err) {
-            if (err)
-                global.log('connection fail: ' + err);
-        }));
     },
 
     _propertyChanged: function(dbus, property, value) {

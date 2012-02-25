@@ -343,9 +343,9 @@ function Agent() {
 }
 
 Agent.prototype = {
-    _init: function(callback) {
+    _init: function(manager) {
         DBus.system.exportObject(ConnmanDbus.AGENT_PATH, this);
-        this._getService_cb = callback;
+        this._manager = manager;
     },
 
     _onDialogDone: function(dialog, canceled, reply, callback) {
@@ -377,8 +377,18 @@ Agent.prototype = {
         global.log('TODO: Release');
     },
 
+    _getService: function(path) {
+        for (let i = 0, len = this._manager.Services.length; i < len; i++) {
+            let [objPath, service] = this._manager.Services[i];
+
+            if (objPath == path)
+                return service;
+        }
+        return null;
+    },
+
     ReportErrorAsync: function(svcPath, error, callback) {
-        let service = this._getService_cb(svcPath);
+        let service = this._getService(svcPath);
 
         if (service == null) {
             callback();
@@ -400,7 +410,7 @@ Agent.prototype = {
     },
 
     RequestInputAsync: function(svcPath, fields, callback) {
-        let service = this._getService_cb(svcPath);
+        let service = this._getService(svcPath);
 
         if (service == null)
             throw new DBus.DBusError(ConnmanDbus.AGENT_ERROR_CANCELED,

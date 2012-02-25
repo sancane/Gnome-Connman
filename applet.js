@@ -91,9 +91,8 @@ Connman.prototype = {
     _init: function() {
         PanelMenu.SystemStatusButton.prototype._init.call(this,
                                                 Icons.NetworkStatus.OFFLINE);
-
-        //this._agent = new Agent.Agent(Lang.bind(this, this._getService));
         this._manager = new Manager();
+        this._agent = new Agent.Agent(this._manager);
 
         this._servicesItem = new PopupMenu.PopupSubMenuMenuItem(
                                                     Translate.SERVICES);
@@ -196,11 +195,6 @@ Connman.prototype = {
         this._manager.disconnect(this._servChangedId);
     },
 
-    _getService: function(svcPath) {
-        /* TODO */
-        return null;
-    },
-
     _updateStateIcon: function() {
         if (this._manager.OfflineMode) {
             this.setIcon(Icons.NetworkStatus.OFFLINE);
@@ -217,8 +211,8 @@ Connman.prototype = {
 
     destroy: function() {
         this._manager.proxy.UnregisterAgentRemote(ConnmanDbus.AGENT_PATH);
-        //this._agent.destroy();
-        //this._agent = null;
+        this._agent.destroy();
+        this._agent = null;
         this._disconnectSignals();
         this._manager.destroy();
         this._manager = null;
