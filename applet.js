@@ -160,7 +160,7 @@ Connman.prototype = {
         /* so the only way to keep the menu items sorted is   */
         /* by removing all elements and inserting them sorted */
         this._servicesItem.menu.removeAll();
-        global.log('Services: ' + services);
+
         for (let i = 0, len = services.length; i < len; i++) {
             let [path, service] = services[i];
             let item = Service.ServiceItemFactory(service);
