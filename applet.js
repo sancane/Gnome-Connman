@@ -117,7 +117,7 @@ Connman.prototype = {
         this._manager.proxy.RegisterAgentRemote(ConnmanDbus.AGENT_PATH,
                                                 Lang.bind(this, function(err) {
             if (err != null)
-                global.log('Connman: ' + err);
+                global.log('RegisterAgent: ' + err);
         }));
 
 	this._offLineMode = new OfflineSwitchMenuItem(this._manager);
@@ -129,7 +129,7 @@ Connman.prototype = {
         this._manager.proxy.UnregisterAgentRemote(ConnmanDbus.AGENT_PATH,
 		                                Lang.bind(this, function(err) {
                 if (err != null)
-                    global.log('Connman: ' + err);
+                    global.log('UnregisterAgent: ' + err);
         }));
 
         this._setInitialVisibility();
@@ -145,7 +145,7 @@ Connman.prototype = {
             this._updateStateIcon();
             break;
         default:
-            global.log('TODO: Process ' + property);
+            global.log('Ignored: ' + property);
             break;
         }
     },
