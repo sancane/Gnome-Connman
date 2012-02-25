@@ -36,7 +36,7 @@ function init(metadata) {
 
 function enable() {
     connman = new Applet.Connman();
-    Main.panel.addToStatusArea('networkp', connman);
+    Main.panel.addToStatusArea('network-connman', connman);
 }
 
 function disable() {
