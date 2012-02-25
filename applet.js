@@ -150,7 +150,6 @@ Connman.prototype = {
     },
 
     _techAdded: function(obj, technology) {
-        /* TODO: Check duplicates */
         item = new Technology.TechSwitchMenuItem(technology);
         this._configItem.menu.addMenuItem(item);
     },
