@@ -52,6 +52,8 @@ const ManagerInterface = {
         { name: 'PropertyChanged', inSignature: 'sv' },
         { name: 'TechnologyAdded', inSignature: 'oa{sv}' },
         { name: 'TechnologyRemoved', inSignature: 'o' },
+        { name: 'ServicesAdded', inSignature: 'a(oa{sv})' },
+        { name: 'ServicesRemoved', inSignature: 'a{o}' },
         ]
 };
 

@@ -252,9 +252,6 @@ Manager.prototype = {
     },
 
     _updateProperty:function(prop, value) {
-        if (prop == 'Services')
-            return;
-
         if (this[prop] && this[prop] == value)
             return;
 
@@ -323,12 +320,24 @@ Manager.prototype = {
                             Lang.bind(this, function(bus, objPath, properties) {
             global.log('TODO: Removed ' + properties['Name']);
         }));
+
+        this._svcAddedId = this.proxy.connect('ServicesAdded',
+                                    Lang.bind(this, function(bus, services) {
+            global.log('TODO: Service Added');
+        }));
+
+        this._svcRemovedId = this.proxy.connect('ServicesRemoved',
+                                    Lang.bind(this, function(bus, services) {
+            global.log('TODO: Service Removed');
+        }));
     },
 
     _disconnectSignals: function() {
         this.proxy.disconnect(this._propChangeId);
         this.proxy.disconnect(this._techAddedId);
         this.proxy.disconnect(this._techRemovedId);
+        this.proxy.disconnect(this._svcAddedId);
+        this.proxy.disconnect(this._svcRemovedId);
     },
 
     _getProperties: function() {
