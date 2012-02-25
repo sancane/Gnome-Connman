@@ -215,11 +215,6 @@ Connman.prototype = {
             global.log('Unexpected state: ' + this.State);
     },
 
-    _connectService: function(object, event, service) {
-        /* TODO: Change icon or do something */
-        service.connectService();
-    },
-
     destroy: function() {
         this._manager.proxy.UnregisterAgentRemote(ConnmanDbus.AGENT_PATH);
         //this._agent.destroy();
