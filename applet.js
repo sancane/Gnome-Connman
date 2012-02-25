@@ -346,8 +346,10 @@ Manager.prototype = {
 
         this.proxy.GetTechnologiesRemote(Lang.bind(this,
                                                 function(technologies, err) {
-            if (err != null)
+            if (err != null) {
                 global.log('GetTechnologies: ' + err);
+                return;
+            }
 
             for (let i = 0, len = technologies.length; i < len; i++) {
                 let [path, properties] = technologies[i];
@@ -356,8 +358,10 @@ Manager.prototype = {
         }));
 
         this.proxy.GetServicesRemote(Lang.bind(this, function(services, err) {
-            if (err != null)
+            if (err != null) {
                 global.log('GetServices: ' + err);
+                return;
+            }
 
             this._addServices(services);
         }));
