@@ -134,6 +134,7 @@ Connman.prototype = {
 
         this._setInitialVisibility();
         this._configItem.menu.removeAll();
+        this._servicesItem.menu.removeAll();
     },
 
     _propChanged: function(obj, property, value) {
@@ -305,7 +306,6 @@ Manager.prototype = {
         /* Remove remaining services */
         for (let i = 0, len = this.Services.length; i < len; i++) {
             let [path, service] = this.Services[i];
-            global.log('Destroy service ' + path);
             service.destroy();
         }
 
@@ -380,6 +380,14 @@ Manager.prototype = {
             this.Technologies[technology].destroy();
 
         this.Technologies = {};
+
+        for (let i = 0, len = this.Services.length; i < len; i++) {
+            let [path, service] = this.Services[i];
+            service.destroy();
+        }
+
+        this.Services = [];
+
         this._disconnectSignals();
 
         this.State = ManagerState.OFFLINE;
