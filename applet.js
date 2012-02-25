@@ -108,9 +108,9 @@ Connman.prototype = {
     },
 
     _setInitialVisibility: function() {
-        this.actor.visible = false;
-        this._configItem.actor.visible = false;
-        this._servicesItem.actor.visible = false;
+        this.actor.hide();
+        this._configItem.actor.hide();
+        this._servicesItem.actor.hide();
     },
 
     _demonStart: function() {
@@ -122,7 +122,7 @@ Connman.prototype = {
 
 	this._offLineMode = new OfflineSwitchMenuItem(this._manager);
         this._configItem.menu.addMenuItem(this._offLineMode);
-        this.actor.visible = true;
+        this.actor.show();
     },
 
     _demonStop: function() {
@@ -139,7 +139,7 @@ Connman.prototype = {
     _propChanged: function(obj, property, value) {
         switch(property) {
         case 'OfflineMode':
-            this._configItem.actor.visible = true;
+            this._configItem.actor.show();
         case 'State':
             this._updateStateIcon();
             break;
