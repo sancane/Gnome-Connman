@@ -183,7 +183,7 @@ Connman.prototype = {
                                             Lang.bind(this, this._propChanged));
         this._techAddedId = this._manager.connect('technology-added',
                                             Lang.bind(this, this._techAdded));
-        this._techAddedId = this._manager.connect('services-changed',
+        this._servChangedId = this._manager.connect('services-changed',
                                         Lang.bind(this, this._updateServices));
     },
 
@@ -192,6 +192,7 @@ Connman.prototype = {
         this._manager.disconnect(this._stopId);
         this._manager.disconnect(this._propChangeId);
         this._manager.disconnect(this._techAddedId);
+        this._manager.disconnect(this._servChangedId);
     },
 
     _getService: function(svcPath) {
