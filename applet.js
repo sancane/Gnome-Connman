@@ -305,6 +305,31 @@ Manager.prototype = {
         this.emit('services-changed', this.Services);
     },
 
+    _servicesRemoved: function(services) {
+        for (let i = 0, len = services.length; i < len; i++) {
+            let path = services[i];
+            let [index, service] = this._getElement(path);
+
+            if (index < 0)
+                continue;
+
+            service.destroy();
+            delete this.Services[index];
+        }
+
+        let newList = [];
+        let numServices = 0;
+        for (let i = 0, len = this.Services.length; i < len; i++) {
+            if (!this.Services[i])
+                continue;
+
+            newList[numServices++] = this.Services[i];
+        }
+
+        this.Services = newList;
+        this.emit('services-changed', this.Services);
+    },
+
     _connectSignals: function() {
         this._propChangeId = this.proxy.connect('PropertyChanged',
                                       Lang.bind(this, function(bus, prop, val) {
@@ -328,7 +353,7 @@ Manager.prototype = {
 
         this._svcRemovedId = this.proxy.connect('ServicesRemoved',
                                     Lang.bind(this, function(bus, services) {
-            this._getServices();
+            this._servicesRemoved(services);
         }));
     },
 
