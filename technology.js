@@ -32,19 +32,20 @@ const ConnmanDbus = Extension.connmanDbus;
 
 const PopupMenu = imports.ui.popupMenu;
 
-function TechSwitchMenuItem() {
+function PropertyChangedSwitchMenuItem() {
     this._init.apply(this, arguments);
 }
 
-TechSwitchMenuItem.prototype = {
+PropertyChangedSwitchMenuItem.prototype = {
     __proto__: PopupMenu.PopupSwitchMenuItem.prototype,
 
-    _init: function(technology) {
-        PopupMenu.PopupSwitchMenuItem.prototype._init.call(this, technology.Name,
-                                                            technology.Powered);
-        this._technology = technology;
-        this._signalId = this._technology.connect('property-changed',
-                                        Lang.bind(this, this._updateState));
+    _init: function(name, status, obj, proxy, property) {
+        PopupMenu.PopupSwitchMenuItem.prototype._init.call(this, name, status);
+        this._obj = obj;
+        this._proxy = proxy;
+        this._property = property;
+        this._signalId = this._obj.connect('property-changed',
+                                            Lang.bind(this, this._updateState));
     },
 
     _toggle: function() {
@@ -53,23 +54,23 @@ TechSwitchMenuItem.prototype = {
     },
 
     toggle: function() {
-        this._technology.proxy.SetPropertyRemote('Powered', !this._switch.state,
+        this._proxy.SetPropertyRemote(this._property, !this._switch.state,
                                                 Lang.bind(this, function(err) {
             if (err != null)
-                global.log('TechnologyItem: ' + err);
+                global.log(this._property + ': ' + err);
         }));
     },
 
     _updateState: function(obj, property, value) {
-        if (property == 'Powered')
+        if (property == this._property && this._switch.state != value)
             this._toggle();
     },
 
     destroy: function () {
-        this._technology.disconnect(this._signalId);
+        this._obj.disconnect(this._signalId);
         PopupMenu.PopupSwitchMenuItem.prototype.destroy.call(this);
     }
-}
+};
 
 function Technology() {
     this._init.apply(this, arguments);

@@ -41,46 +41,6 @@ const Panel = imports.ui.panel;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 
-function OfflineSwitchMenuItem() {
-    this._init.apply(this, arguments);
-}
-
-OfflineSwitchMenuItem.prototype = {
-    __proto__: PopupMenu.PopupSwitchMenuItem.prototype,
-
-    _init: function(manager) {
-        PopupMenu.PopupSwitchMenuItem.prototype._init.call(this,
-                                                    Translate.OFFLINE, false);
-        this._manager = manager;
-        this._signalId = this._manager.connect('property-changed',
-                                            Lang.bind(this, this._updateState));
-    },
-
-    _toggle: function() {
-        this._switch.toggle();
-        this.emit('toggled', this._switch.state);
-    },
-
-    toggle: function() {
-        this._manager.proxy.SetPropertyRemote('OfflineMode',
-                                                !this._switch.state,
-                                                Lang.bind(this, function(err) {
-            if (err != null)
-                global.log('OfflineSwitch: ' + err);
-        }));
-    },
-
-    _updateState: function(obj, property, value) {
-        if (property == 'OfflineMode' && this._switch.state != value)
-            this._toggle();
-    },
-
-    destroy: function () {
-        this._manager.disconnect(this._signalId);
-        PopupMenu.PopupSwitchMenuItem.prototype.destroy.call(this);
-    }
-};
-
 function Connman() {
   this._init.apply(this, arguments);
 }
@@ -119,7 +79,9 @@ Connman.prototype = {
                 global.log('RegisterAgent: ' + err);
         }));
 
-	this._offLineMode = new OfflineSwitchMenuItem(this._manager);
+	this._offLineMode = new Technology.PropertyChangedSwitchMenuItem(
+	                                Translate.OFFLINE, false, this._manager,
+	                                this._manager.proxy, 'OfflineMode');
         this._configItem.menu.addMenuItem(this._offLineMode);
         this.actor.show();
     },
@@ -150,7 +112,9 @@ Connman.prototype = {
     },
 
     _techAdded: function(obj, technology) {
-        item = new Technology.TechSwitchMenuItem(technology);
+        item = new Technology.PropertyChangedSwitchMenuItem(technology.Name,
+                                                technology.Powered, technology,
+                                                technology.proxy, 'Powered');
         this._configItem.menu.addMenuItem(item);
     },
 
