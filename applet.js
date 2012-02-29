@@ -240,39 +240,6 @@ Manager.prototype = {
         return [-1, null];
     },
 
-    /* TODO: Remove tis function when serveradded signal is working */
-    _addServices: function(services) {
-        let newList = new Array(services.length);
-
-        /* Add new services */
-        for (let i = 0, len = services.length; i < len; i++) {
-            let [path, properties] = services[i];
-            let [index, service] = this._getElement(path);
-
-            if (index < 0)
-                newList[i] = [path, new Service.Service(path, properties)];
-            else {
-                newList[i] = [path, service];
-                delete this.Services[index];
-            }
-        }
-
-        /* Free resources of remaining services */
-        for (let i = 0, len = this.Services.length; i < len; i++) {
-            if (!this.Services[i])
-                continue;
-
-            let [path, service] = this.Services[i];
-            service.destroy();
-        }
-
-        this.Services = newList;
-        this.emit('services-changed', this.Services);
-    },
-
-    /* TODO: Use this function when ServiceAdded signal is received. */
-    /* We don't use it because this signal only provides new services. */
-    /* It should change in connman to provde existing service as well */
     _serviceAdded: function(services) {
         let newList = new Array(services.length);
 
@@ -335,8 +302,7 @@ Manager.prototype = {
 
         this._svcAddedId = this.proxy.connect('ServicesAdded',
                                     Lang.bind(this, function(bus, services) {
-            this._getServices();
-            //this._serviceAdded(services);
+            this._serviceAdded(services);
         }));
 
         this._svcRemovedId = this.proxy.connect('ServicesRemoved',
@@ -388,7 +354,7 @@ Manager.prototype = {
                 return;
             }
 
-            this._addServices(services);
+            this._serviceAdded(services);
         }));
     },
 
