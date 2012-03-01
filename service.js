@@ -59,8 +59,51 @@ ServiceItem.prototype = {
 
     _init: function(service) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
+        this._id = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
+        this._status = new St.BoxLayout({
+                                        style_class: 'popup-device-menu-item'
+                                        });
+
+        this._statIcon = new St.Icon({ icon_name: Icons.NetworkStatus.IDLE,
+                                   icon_type: St.IconType.SYMBOLIC,
+                                   style_class: 'popup-menu-icon' });
+        this._statIcon.visible = false;
+        this._status.add_actor(this._statIcon);
+        this.addActor(this._id);
+        this.addActor(this._status);
+
         this._service = service;
         this._timeoutId = 0;
+        this._service.connect('property-changed', Lang.bind(this,
+                                                            this._changeState));
+    },
+
+    _changeState: function(obj, property, value) {
+        if (property != 'State')
+            return;
+
+        switch(value) {
+        case State.ASSOCIATION:
+        case State.CONFIGURATION:
+        case State.READY:
+            if (this._timeoutId == 0) {
+                /* Set animation while network is connecting */
+                this._statIcon.visible = true;
+                this._timeoutId = Mainloop.timeout_add_seconds(1,
+                                Lang.bind(this, this._updateStatusIcon));
+            }
+            break;
+        case State.IDLE:
+        case State.FAILURE:
+        case State.ONLINE:
+            if (this._timeoutId > 0) {
+                /* Stop animation */
+                Mainloop.source_remove(this._timeoutId);
+                this._statIcon.visible = false;
+                this._timeoutId = 0;
+            }
+            break;
+        }
     },
 
     _updateStatusIcon: function() {
@@ -88,43 +131,6 @@ ServiceItem.prototype = {
         return true;
     },
 
-    addStatusIcon: function(box) {
-        this._statIcon = new St.Icon({ icon_name: Icons.NetworkStatus.IDLE,
-                                   icon_type: St.IconType.SYMBOLIC,
-                                   style_class: 'popup-menu-icon' });
-        this._statIcon.visible = false;
-
-        box.add_actor(this._statIcon);
-        this._service.connect('property-changed', Lang.bind(this,
-                                                function(obj, property, value) {
-            if (property != 'State')
-                return;
-
-            switch(value) {
-            case State.ASSOCIATION:
-            case State.CONFIGURATION:
-            case State.READY:
-                if (this._timeoutId == 0) {
-                    /* Set animation while network is connecting */
-                    this._statIcon.visible = true;
-                    this._timeoutId = Mainloop.timeout_add_seconds(1,
-                                    Lang.bind(this, this._updateStatusIcon));
-                }
-                break;
-            case State.IDLE:
-            case State.FAILURE:
-            case State.ONLINE:
-                if (this._timeoutId > 0) {
-                    /* Stop animation */
-                    Mainloop.source_remove(this._timeoutId);
-                    this._statIcon.visible = false;
-                    this._timeoutId = 0;
-                }
-                break;
-            }
-        }));
-    },
-
     activate: function(event) {
         this._service.proxy.ConnectRemote(Lang.bind(this, function(err) {
             if (err)
@@ -144,11 +150,8 @@ WifiServiceItem.prototype = {
 
     _init: function(service) {
         ServiceItem.prototype._init.call(this, service);
-
-        this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
         this._label = new St.Label({ text: this._service.Name != undefined ?
-                        this._service.Name : '<' + Translate.UNKNOWN + '>'});
-
+                        this._service.Name : '<' + Translate.UNKNOWN + '>' });
         let icon_name = this._service.Strength ?
             this._signalToIcon(this._service.Strength) : Icons.WifiSignal.WEAK;
 
@@ -156,10 +159,9 @@ WifiServiceItem.prototype = {
                                    icon_type: St.IconType.SYMBOLIC,
                                    style_class: 'popup-menu-icon' });
 
-        this._box.add_actor(this._icon);
-        this._box.add_actor(this._label);
-        this.addStatusIcon(this._box);
-        this.addActor(this._box);
+        this._id.add_actor(this._icon);
+        this._id.add_actor(this._label);
+
         this._service.connect('property-changed', Lang.bind(this,
                                                 function(obj, property, value) {
             switch(property) {
@@ -197,15 +199,14 @@ EtherServiceItem.prototype = {
     _init: function(service) {
         ServiceItem.prototype._init.call(this, service);
 
-        this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
         this._label = new St.Label({ text: this._service.Name != undefined ?
                         this._service.Name : '<' + Translate.UNKNOWN + '>' });
         this._icon = new St.Icon({ icon_name: Icons.Wired,
                                    icon_type: St.IconType.SYMBOLIC,
                                    style_class: 'popup-menu-icon' });
-        this._box.add_actor(this._icon);
-        this._box.add_actor(this._label);
-        this.addActor(this._box);
+        this._id.add_actor(this._icon);
+        this._id.add_actor(this._label);
+
         this._service.connect('property-changed', Lang.bind(this,
                                                 function(obj, property, value) {
             if (property == 'Name')
