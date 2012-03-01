@@ -38,3 +38,4 @@ const WifiSignal = {
 };
 
 const Wired = 'network-wired';
+const WIFI_ENCRYPTED = 'network-wireless-encrypted';

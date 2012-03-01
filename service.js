@@ -162,6 +162,12 @@ WifiServiceItem.prototype = {
         this._id.add_actor(this._icon);
         this._id.add_actor(this._label);
 
+        if (this._hasSecurity()) {
+            this._secureIcon = new St.Icon({ icon_name: Icons.WIFI_ENCRYPTED,
+                                            style_class: 'popup-menu-icon' });
+            this._status.add_actor(this._secureIcon);
+        }
+
         this._service.connect('property-changed', Lang.bind(this,
                                                 function(obj, property, value) {
             switch(property) {
@@ -173,6 +179,18 @@ WifiServiceItem.prototype = {
                 break;
             }
         }));
+    },
+
+    _hasSecurity: function() {
+        if (!this._service.Security)
+            return false;
+
+        for (let i = 0, len = this._service.Security.length; i < len; i++) {
+            if (this._service.Security[i] != 'none')
+                return true;
+        }
+
+        return false;
     },
 
     _signalToIcon: function (value) {
