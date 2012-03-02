@@ -21,6 +21,11 @@
  *
  */
 
+const FavoriteService = {
+    CONNECTED: 'starred',
+    DISCONNECTED: 'non-starred',
+};
+
 const NetworkStatus = {
     ERROR: 'network-error',
     IDLE: 'network-idle',
