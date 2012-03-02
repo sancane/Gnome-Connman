@@ -67,41 +67,76 @@ ServiceItem.prototype = {
         this._statIcon = new St.Icon({ icon_name: Icons.NetworkStatus.IDLE,
                                    icon_type: St.IconType.SYMBOLIC,
                                    style_class: 'popup-menu-icon' });
+
+        let icon_name = Icons.FavoriteService.DISCONNECTED
+        if (service.State && service.State == State.ONLINE)
+            icon_name = Icons.FavoriteService.CONNECTED;
+
+        this._favIcon = new St.Icon({ icon_name: icon_name,
+                               icon_type: St.IconType.SYMBOLIC,
+                               style_class: 'popup-menu-icon' });
+
         this._statIcon.visible = false;
+        if (!service.Favorite)
+            this._favIcon.visible = false;
+
         this._status.add_actor(this._statIcon);
+        this._status.add_actor(this._favIcon);
+
         this.addActor(this._id);
         this.addActor(this._status);
 
         this._service = service;
         this._timeoutId = 0;
+
         this._service.connect('property-changed', Lang.bind(this,
-                                                            this._changeState));
+                                                        this._propertyChanged));
     },
 
-    _changeState: function(obj, property, value) {
-        if (property != 'State')
+    _propertyChanged: function(obj, property, value) {
+        switch(property) {
+        case 'Favorite':
+            this._favIcon.visible = value;
+            break;
+        case 'State':
+            this._changeState(property, value);
+            break;
+        }
+    },
+
+    _startAnimation: function() {
+        if (this._timeoutId != 0)
             return;
 
+        this._statIcon.visible = true;
+        this._timeoutId = Mainloop.timeout_add_seconds(1,
+                                    Lang.bind(this, this._updateStatusIcon));
+    },
+
+    _stopAnimation: function() {
+        if (this._timeoutId <= 0)
+            return;
+
+        Mainloop.source_remove(this._timeoutId);
+        this._statIcon.visible = false;
+        this._timeoutId = 0;
+    },
+
+    _changeState: function(property, value) {
         switch(value) {
         case State.ASSOCIATION:
         case State.CONFIGURATION:
         case State.READY:
-            if (this._timeoutId == 0) {
-                /* Set animation while network is connecting */
-                this._statIcon.visible = true;
-                this._timeoutId = Mainloop.timeout_add_seconds(1,
-                                Lang.bind(this, this._updateStatusIcon));
-            }
+            this._startAnimation();
+            break;
+        case State.ONLINE:
+            this._favIcon.set_icon_name(Icons.FavoriteService.CONNECTED);
+            this._stopAnimation();
             break;
         case State.IDLE:
         case State.FAILURE:
-        case State.ONLINE:
-            if (this._timeoutId > 0) {
-                /* Stop animation */
-                Mainloop.source_remove(this._timeoutId);
-                this._statIcon.visible = false;
-                this._timeoutId = 0;
-            }
+            this._favIcon.set_icon_name(Icons.FavoriteService.DISCONNECTED);
+            this._stopAnimation();
             break;
         }
     },
