@@ -142,12 +142,6 @@ ServiceItem.prototype = {
     },
 
     _updateStatusIcon: function() {
-        if (this._service.State == State.ONLINE) {
-            this._statIcon.visible = false;
-            this._timeoutId = 0;
-            return false;
-        }
-
         let icon_name;
 
         switch(this._statIcon.get_icon_name()) {
