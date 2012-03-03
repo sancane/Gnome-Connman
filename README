@@ -1,0 +1,9 @@
+Connman Extension
+
+This is just a simple extension for gnome shell to manage networks using connman.
+It requires connman.
+
+Installation.
+To install it copy the files into a "gnome_connman@extensions.com" directory and
+move it to your local gnome-shell extension folder.
+
