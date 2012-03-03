@@ -27,6 +27,27 @@ const Extension = imports.ui.extensionSystem.extensions[EXTENSION_DIR];
 const Applet = Extension.applet;
 
 const Main = imports.ui.main;
+const Panel = imports.ui.panel;
+
+function removeNMApplet() {
+    let len = Main.panel._rightBox.get_children().length;
+
+    for (let i = 0; i < len; i++) {
+        if (Main.panel._statusArea['network'] ==
+                            Main.panel._rightBox.get_children()[i]._delegate) {
+            Main.panel._rightBox.get_children()[i].destroy();
+            break;
+        }
+    }
+
+    Main.panel._statusArea['network'] = null;
+}
+
+function restaureNMApplet() {
+        let ind = new Panel.STANDARD_STATUS_AREA_SHELL_IMPLEMENTATION['network'];
+        Main.panel.addToStatusArea('network', ind,
+                            Panel.STANDARD_STATUS_AREA_ORDER.indexOf('network'));
+}
 
 let connman = null;
 
@@ -35,10 +56,15 @@ function init(metadata) {
 }
 
 function enable() {
+    removeNMApplet();
     connman = new Applet.Connman();
-    Main.panel.addToStatusArea('network-connman', connman);
+    Main.panel.addToStatusArea('network', connman);
 }
 
 function disable() {
     connman.destroy();
+    connman = null;
+    Main.panel._statusArea['network'] = null;
+
+    restaureNMApplet();
 }
