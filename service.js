@@ -84,7 +84,7 @@ ServiceItem.prototype = {
         this._status.add_actor(this._favIcon);
 
         this.addActor(this._id);
-        this.addActor(this._status);
+        this.addActor(this._status, {align: St.Align.END});
 
         this._service = service;
         this._timeoutId = 0;
