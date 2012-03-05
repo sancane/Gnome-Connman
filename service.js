@@ -302,7 +302,7 @@ function ServiceItemFactory(service) {
     case ServiceType.ETHERNET:
         return new EtherServiceItem(service);
     default:
-        global.log('TODO: Add service item for ' + this._service.Type);
+        global.log('TODO: Add service item for ' + service.Type);
         return null;
     }
 };
