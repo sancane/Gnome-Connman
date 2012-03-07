@@ -42,5 +42,6 @@ const WifiSignal = {
     WEAK: 'network-wireless-signal-weak',
 };
 
+const BLUETOOTH = 'bluetooth-active-symbolic';
 const Wired = 'network-wired';
 const WIFI_ENCRYPTED = 'network-wireless-encrypted';

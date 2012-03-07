@@ -36,6 +36,7 @@ const Translate = Extension.translate;
 const PopupMenu = imports.ui.popupMenu;
 
 const ServiceType = {
+    BLUETOOTH: 'bluetooth',
     ETHERNET: 'ethernet',
     WIFI: 'wifi',
 };
@@ -262,6 +263,32 @@ EtherServiceItem.prototype = {
     }
 };
 
+function BtServiceItem() {
+    this._init.apply(this, arguments);
+};
+
+BtServiceItem.prototype = {
+    __proto__: ServiceItem.prototype,
+
+    _init: function(service) {
+        ServiceItem.prototype._init.call(this, service);
+
+        this._label = new St.Label({ text: this._service.Name != undefined ?
+                        this._service.Name : '<' + Translate.UNKNOWN + '>' });
+        this._icon = new St.Icon({ icon_name: Icons.BLUETOOTH,
+                                   icon_type: St.IconType.SYMBOLIC,
+                                   style_class: 'popup-menu-icon' });
+        this._id.add_actor(this._icon);
+        this._id.add_actor(this._label);
+
+        this._service.connect('property-changed', Lang.bind(this,
+                                                function(obj, property, value) {
+            if (property == 'Name')
+                this._label.set_text(value);
+        }));
+    }
+};
+
 function Service() {
     this._init.apply(this, arguments);
 };
@@ -301,6 +328,8 @@ function ServiceItemFactory(service) {
         return new WifiServiceItem(service);
     case ServiceType.ETHERNET:
         return new EtherServiceItem(service);
+    case ServiceType.BLUETOOTH:
+        return new BtServiceItem(service);
     default:
         global.log('TODO: Add service item for ' + service.Type);
         return null;
